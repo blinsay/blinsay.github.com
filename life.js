@@ -18,18 +18,19 @@ function game() {
   }
 
   self.newCell = function(board, x, y) {
-    var live = 0;
+    var live = board[x][y].alive,
+        liveNeighbors = 0;
     for (var i = Math.max(x - 1, 0); i <= Math.min(x + 1, width - 1); i++) {
       for (var j = Math.max(y - 1, 0); j <= Math.min(y + 1, height - 1); j++) {
         if (i == x && j == y) {
           continue;
         }
         if (board[i][j].alive) {
-          live += 1;
+          liveNeighbors += 1;
         }
       }
     }
-    return {x: x, y: y, alive: (live >= 2 && live <= 3)}; 
+    return {x: x, y: y, alive: ((live && (liveNeighbors >= 2 && liveNeighbors <= 3)) || (!live && liveNeighbors == 3))}; 
   }
 
   self.next = function(board) {
