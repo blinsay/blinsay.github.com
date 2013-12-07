@@ -15,16 +15,19 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
           }
 
-          #info {
+
+          #strip {
             position: absolute;
-            background: white;
-            top: 15; left 15;
-            font-size: 20px;
-            text-align: left;
-            padding: 10px;
+            background: #C9BB79;
             margin-left: 5%;
-            margin-right: 5%;
-            margin-top: 100px;
+            height: 1000px;
+          }
+
+          #info {
+            font-size: 16px;
+            text-align: left;
+            padding:20px;
+            margin-top: 55px;
           }
           
           #life {
@@ -32,23 +35,25 @@
             height: 1000px;
           }
 
-          .cell { fill:none}
-          .cell.alive { fill:#474747 }
+          .cell { fill:#474747; border: 1px white; }
+          .cell.alive { fill:#C9BB79 }
       </style>
       <script src="d3.v3.min.js"></script>
       <script src="life.js"></script>
     </head>
     <body>
       <div id="life">
-        <div id="info">
-          <a>blinsay at gmail</a><br>
-          <a href="https://github.com/blinsay">github</a><br>
-          <a href="http://twitter.com/blinsay">twitter</a><br>
+        <div id="strip">
+          <div id="info">
+            <a>blinsay at gmail</a><br>
+            <a href="https://github.com/blinsay">github</a><br>
+            <a href="http://twitter.com/blinsay">twitter</a><br>
+          </div>
         </div>
       </div>
     </body>
     <script>
-      var life = game().width(200).height(100).seedFraction(0.0075),
+      var life = game().width(200).height(100).seedFraction(0.125),
           drawBoard = board().cellWidth(10).cellHeight(10),
           gameState = life.seed();
 
