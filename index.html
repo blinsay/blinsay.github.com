@@ -1,10 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <meta name="viewport" content="width=1280"> <!-- iPhone -->
-        <title>Bensway</title>
-        <style type="text/css" title="currentStyle" media="screen">
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="viewport" content="width=1280"> <!-- iPhone -->
+      <title>Bensway</title>
+      <style type="text/css" title="currentStyle" media="screen">
           html, body {
             height: 100%;
             margin:0px auto;
@@ -14,47 +14,48 @@
             color:#000000;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
           }
-          
-          ul {
-            list-style-type: none;
-            padding: 0px;
-            margin: 0px;
-          }
-          
-          #pictoore {
-            z-index: 1;
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-            margin: 0px 0px;
-          }
-                    
-          #name {
-            z-index: 2;
+
+          #info {
             position: absolute;
-            top: 15%;
-            left: 75%;
-            font-size: 28px;
+            background: white;
+            top: 15; left 15;
+            font-size: 20px;
+            text-align: left;
+            padding: 10px;
+            margin-left: 5%;
+            margin-right: 5%;
+            margin-top: 100px;
           }
           
-          #benfo {
-            font-size: 16px;
-            text-align: right;
+          #life {
+            width: 100%; 
+            height: 1000px;
           }
-          
-       </style>
+
+          .cell { fill:none}
+          .cell.alive { fill:#474747 }
+      </style>
+      <script src="d3.js"></script>
+      <script src="life.js"></script>
     </head>
     <body>
-      <div id="name">
-        <strong>Ben Linsay</strong><br>
-        <div id="benfo">
+      <div id="life">
+        <div id="info">
           <a>blinsay at gmail</a><br>
           <a href="https://github.com/blinsay">github</a><br>
           <a href="http://twitter.com/blinsay">twitter</a><br>
         </div>
       </div>
-      <div id="pictoore">
-        <img src="./background.jpg">
-      </div>
     </body>
+    <script>
+      var life = game().width(200).height(100).seedFraction(0.012),
+          drawBoard = board().cellWidth(10).cellHeight(10),
+          gameState = life.seed();
+
+      d3.select('#life').datum(gameState).call(drawBoard);
+      setInterval(function(){
+        gameState = life.next(gameState);
+        d3.select('#life').datum(gameState).call(drawBoard);
+      }, 1250);
+    </script>
 </html>
