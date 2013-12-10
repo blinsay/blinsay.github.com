@@ -74,7 +74,6 @@ function game() {
   return self;
 }
 
-// FIXME: Something in the drawing doesn't let re-draws happen. Womp womp.
 function board() {
   var cellWidth = 10,
       cellHeight = 10;
