@@ -10,33 +10,36 @@ function game() {
   var self = {};
 
   self.makeBoard = function() {
-    var board = new Array(width);
-    for (var i = 0; i < width; i++) {
-      board[i] = new Array(height);
+    var board = new Array(height);
+    for (var i = 0; i < board.length; i++) {
+      board[i] = new Array(width);
     }
     return board;
   }
 
   self.newCell = function(board, x, y) {
-    var live = board[x][y].alive,
+    var livedFor = board[x][y],
         liveNeighbors = 0;
-    for (var i = Math.max(x - 1, 0); i <= Math.min(x + 1, width - 1); i++) {
-      for (var j = Math.max(y - 1, 0); j <= Math.min(y + 1, height - 1); j++) {
+    for (var i = Math.max(x - 1, 0); i <= Math.min(x + 1, height - 1); i++) {
+      for (var j = Math.max(y - 1, 0); j <= Math.min(y + 1, width - 1); j++) {
         if (i == x && j == y) {
           continue;
         }
-        if (board[i][j].alive) {
+        if (board[i][j]) {
           liveNeighbors += 1;
         }
       }
     }
-    return {x: x, y: y, alive: ((live && (liveNeighbors >= 2 && liveNeighbors <= 3)) || (!live && liveNeighbors == 3))}; 
+    if ((livedFor && (liveNeighbors >= 2 && liveNeighbors <= 3)) || (!livedFor && liveNeighbors == 3)) {
+      return livedFor + 1;
+    }
+    return 0/*dead*/;
   }
 
   self.next = function(board) {
     var next = self.makeBoard();
-    for (var i = 0; i < width; i++) {
-      for (var j = 0; j < height; j++) {
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++) {
         next[i][j] = self.newCell(board, i, j);
       }
     }
@@ -45,9 +48,9 @@ function game() {
 
   self.seed = function() {
     var newBoard = self.makeBoard();
-    for (var i = 0; i < width; i++) {
+    for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
-        newBoard[i][j] = {x: i, y: j, alive: (Math.random() < seedFraction)};
+        newBoard[i][j] = (Math.random() < seedFraction) ? 1 : 0;
       }
     }
     return newBoard;
@@ -81,11 +84,18 @@ function board() {
 
   var self = function(selection) {
     selection.each(function(data) {
+      var height = cellHeight * data.length,
+          width = cellWidth * data[0].length;
+
       var grid = d3.select(this).selectAll('svg').data([data]);
       grid.enter().append('svg');
+      grid.attr('width', width).attr('height', height);
 
       var rows = grid.selectAll('.row').data(data);
-      rows.enter().append('g').attr('class', 'row');
+      rows.enter()
+        .append('g')
+        .attr('class', 'row')
+        .attr('transform', function(d, i){ return 'translate(0,' + (cellHeight * i) + ')'}); 
 
       var cells = rows.selectAll('.cell').data(function(d){ return d });
       cells.enter()
@@ -93,9 +103,8 @@ function board() {
           .classed('cell', true)
           .attr('width', cellWidth)
           .attr('height', cellHeight)
-          .attr('x', function(d) { return d.x * cellWidth })
-          .attr('y', function(d) { return d.y * cellHeight });
-      cells.classed('alive', function(d){ return d.alive });
+          .attr('x', function(d, i) { return i * cellWidth })
+      cells.classed('alive', function(d){ return d });
     });
   }
 

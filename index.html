@@ -4,57 +4,34 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <meta name="viewport" content="width=1280"> <!-- iPhone -->
       <title>Bensway</title>
-      <style type="text/css" title="currentStyle" media="screen">
-          html, body {
-            height: 100%;
-            margin:0px auto;
-            padding:0px;
-            padding: 0;
-            background-color: #ffffff;
-            color:#000000;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-          }
-
-
-          #strip {
-            position: absolute;
-            background: #C9BB79;
-            margin-left: 5%;
-            height: 1000px;
-          }
-
-          #info {
-            font-size: 16px;
-            text-align: left;
-            padding:20px;
-            margin-top: 55px;
-          }
-          
-          #life {
-            width: 100%; 
-            height: 1000px;
-          }
-
-          .cell { fill:#474747; border: 1px white; }
-          .cell.alive { fill:#C9BB79 }
-      </style>
+      <link href="bootstrap.min.css" rel="stylesheet"> 
       <script src="d3.v3.min.js"></script>
       <script src="life.js"></script>
+      <style>
+        .padded { margin-top: 40px; margin-left: 10px; }
+        .cell { fill:#ffffff; border: 1px white; }
+        .cell.alive { fill:#000000 }
+
+        #life > svg { display: block; margin-left: auto; margin-right: auto; };
+      </style>
     </head>
     <body>
-      <div id="life">
-        <div id="strip">
-          <div id="info">
-            <a>blinsay at gmail</a><br>
-            <a href="https://github.com/blinsay">github</a><br>
-            <a href="http://twitter.com/blinsay">twitter</a><br>
+
+      <div class="container">
+        <div class="row padded">
+          <div class="col-md-2">
+            <div class="row"><span class="h2">Ben Linsay</span></div> 
+            <div class="row"><b>blinsay at gmail</b><br></div> 
+            <div class="row"><a href="https://github.com/blinsay">github</a><br></div>
+            <div class="row"><a href="http://twitter.com/blinsay">twitter</a><br></div>
           </div>
+          <div class="col-md-8 center-block" id="life"> </div>
         </div>
       </div>
     </body>
     <script>
-      var life = game().width(200).height(100).seedFraction(0.125),
-          drawBoard = board().cellWidth(10).cellHeight(10),
+      var life = game().width(250).height(250).seedFraction(0.125),
+          drawBoard = board().cellWidth(3).cellHeight(3),
           gameState = life.seed();
 
       d3.select('#life').datum(gameState).call(drawBoard);
