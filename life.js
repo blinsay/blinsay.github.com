@@ -77,15 +77,17 @@ function game() {
   return self;
 }
 
-// FIXME: Something in the drawing doesn't let re-draws happen. Womp womp.
 function board() {
   var cellWidth = 10,
-      cellHeight = 10;
+      cellHeight = 10,
+      breaks = [0, 1, 5, 10],
+      colors = ["#ffffff", "#67a9cf", "#1c9099", "#016c59"];
 
   var self = function(selection) {
     selection.each(function(data) {
       var height = cellHeight * data.length,
-          width = cellWidth * data[0].length;
+          width = cellWidth * data[0].length,
+          colorScale = d3.scale.linear().domain(breaks).range(colors).clamp(true);
 
       var grid = d3.select(this).selectAll('svg').data([data]);
       grid.enter().append('svg');
@@ -104,7 +106,8 @@ function board() {
           .attr('width', cellWidth)
           .attr('height', cellHeight)
           .attr('x', function(d, i) { return i * cellWidth })
-      cells.classed('alive', function(d){ return d });
+      // cells.classed('alive', function(d){ return d });
+      cells.style('fill', function(d){ return colorScale(d) });
     });
   }
 

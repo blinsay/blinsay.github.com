@@ -30,7 +30,7 @@
       </div>
     </body>
     <script>
-      var life = game().width(250).height(250).seedFraction(0.125),
+      var life = game().width(200).height(200).seedFraction(0.125),
           drawBoard = board().cellWidth(3).cellHeight(3),
           gameState = life.seed();
 
@@ -38,6 +38,6 @@
       setInterval(function(){
         gameState = life.next(gameState);
         d3.select('#life').datum(gameState).call(drawBoard);
-      }, 1250);
+      }, 1500);
     </script>
 </html>
