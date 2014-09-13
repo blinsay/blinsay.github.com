@@ -4,7 +4,7 @@
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <meta name="viewport" content="width=1280"> <!-- iPhone -->
       <title>Bensway</title>
-      <link href="bootstrap.min.css" rel="stylesheet"> 
+      <link href="bootstrap.min.css" rel="stylesheet">
       <script src="d3.v3.min.js"></script>
       <script src="life.js"></script>
       <style>
@@ -16,12 +16,11 @@
       </style>
     </head>
     <body>
-
       <div class="container">
         <div class="row padded">
           <div class="col-md-2">
-            <div class="row"><span class="h2">Ben Linsay</span></div> 
-            <div class="row"><b>blinsay at gmail</b><br></div> 
+            <div class="row"><span class="h2">Ben Linsay</span></div>
+            <div class="row"><b>blinsay at gmail</b><br></div>
             <div class="row"><a href="https://github.com/blinsay">github</a><br></div>
             <div class="row"><a href="http://twitter.com/blinsay">twitter</a><br></div>
           </div>
@@ -30,14 +29,14 @@
       </div>
     </body>
     <script>
-      var life = game().width(200).height(200).seedFraction(0.125),
+      var life = game().width(200).height(200).seedFraction(0.1),
           drawBoard = board().cellWidth(3).cellHeight(3),
           gameState = life.seed();
 
       d3.select('#life').datum(gameState).call(drawBoard);
-      setInterval(function(){
+      d3.timer(function(){
         gameState = life.next(gameState);
         d3.select('#life').datum(gameState).call(drawBoard);
-      }, 1500);
+      }, 0, 250);
     </script>
 </html>
