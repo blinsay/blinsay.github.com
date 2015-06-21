@@ -117,6 +117,9 @@ var life = (function () {
     };
   }
 
+  var stop = false,
+      currentTimeout,
+      currentRequest;
   return {
     debug: function(canvas, fraction, colors, pixelSize, fps) {
       var draw = new Canvas(canvas, colors, pixelSize, pixelSize),
@@ -129,16 +132,26 @@ var life = (function () {
     },
 
     play: function(canvas, fraction, colors, pixelSize, fps) {
+      stop = false;
       var draw = new Canvas(canvas, colors, pixelSize, pixelSize),
           game = new Game(draw.width, draw.height, fraction);
 
       var step = function() {
+        if (stop) {
+          return;
+        }
         game.step().render(draw);
-        setTimeout(function() {
-          requestAnimationFrame(step);
+        currentTimeout = setTimeout(function() {
+          currentRequest = requestAnimationFrame(step);
         }, 1000 / fps);
       };
-      requestAnimationFrame(step);
+      currentRequest = requestAnimationFrame(step);
     },
+
+    stop: function() {
+      stop = true;
+      clearTimeout(currentTimeout);
+      cancelAnimationFrame(currentRequest);
+    }
   };
 })();
