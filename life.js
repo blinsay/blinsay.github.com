@@ -132,8 +132,8 @@ var life = (function () {
           game = new Game(draw.width, draw.height, fraction);
 
       var step = function() {
+        game.step().render(draw);
         setTimeout(function() {
-          game.step().render(draw);
           requestAnimationFrame(step);
         }, 1000 / fps);
       };
