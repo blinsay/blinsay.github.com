@@ -123,8 +123,14 @@ var life = (function () {
   }
 
   return {
-    test : function(canvas, fraction, colors, pixelSize, fps) {
-      return new Canvas(canvas, colors, pixelSize, pixelSize);
+    debug: function(canvas, fraction, colors, pixelSize, fps) {
+      var draw = new Canvas(canvas, colors, pixelSize, pixelSize),
+          game = new Game(draw.width, draw.height, fraction);
+
+      var step = function() {
+        game.step().render(draw);
+      };
+      return {draw: draw, game: game, step: step};
     },
 
     play: function(canvas, fraction, colors, pixelSize, fps) {
