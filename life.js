@@ -1,128 +1,143 @@
-// Conway's Game of Life
-function game() {
-  var
-    // The number of cells on the board
-    width = 10,
-    height = 10,
-    // The fraction of cells that will be live at the beginning of the game. 
-    seedFraction = 0.5;
+var life = (function () {
+  // Drawing
+  function Canvas(canvas, colors, pixelWidth, pixelHeight) {
+    this.pixelWidth  = pixelWidth;
+    this.pixelHeight = pixelHeight;
+    this.width       = Math.floor(canvas.width / pixelWidth);
+    this.height      = Math.floor(canvas.height / pixelHeight);
 
-  var self = {};
+    this.canvasWidth  = canvas.width;
+    this.canvasHeight = canvas.Height;
+    this.ctx          = canvas.getContext('2d');
+    this.imgData      = this.ctx.createImageData(canvas.width, canvas.height);
+    this.data         = this.imgData.data;
 
-  self.makeBoard = function() {
+    this.colors = colors;
+
+    this.drawBoard = function(board) {
+      for (var i = 0; i < this.width; i++) {
+        for (var j = 0; j < this.height; j++) {
+          this.drawCell(i, j, board[i][j]);
+        }
+      }
+      this.finish();
+    };
+
+    this.drawCell = function(x, y, liveness) {
+      this.setPixel.apply(this, [x, y].concat(this.pickColor(liveness)));
+    };
+
+    this.pickColor = function(liveness) {
+      var colors = this.colors,
+          logLiveness = Math.floor(Math.log2(liveness + 1));
+
+      if (logLiveness === 0) {
+        return colors.dead;
+      }
+      return colors.live[Math.min(logLiveness - 1, colors.live.length)];
+    };
+
+    this.setPixel = function(x, y, r, g, b, a) {
+      for (var i = 0; i < this.pixelWidth; i++) {
+        for (var j = 0; j < this.pixelHeight; j++) {
+          var canvasX = (x * this.pixelWidth) + i,
+              canvasY = (y * this.pixelHeight) + j,
+              pos = ((this.canvasWidth * canvasY) + canvasX) * 4;
+
+          this.data[pos + 0] = r;
+          this.data[pos + 1] = g;
+          this.data[pos + 2] = b;
+          this.data[pos + 3] = a;
+        }
+      }
+    };
+
+    this.finish = function() {
+      this.ctx.putImageData(this.imgData, 0, 0);
+    };
+  }
+
+  // Game
+
+  newBoard = function(width, height, aliveFraction) {
     var board = new Array(height);
-    for (var i = 0; i < board.length; i++) {
+    for (var i = 0; i < width; i++) {
       board[i] = new Array(width);
+      for (var j = 0; j < width; j++) {
+        board[i][j] = (Math.random() < aliveFraction) ? 1 : 0;
+      }
     }
     return board;
-  }
+  };
 
-  self.newCell = function(board, x, y) {
-    var livedFor = board[x][y],
-        liveNeighbors = 0;
-    for (var i = Math.max(x - 1, 0); i <= Math.min(x + 1, height - 1); i++) {
-      for (var j = Math.max(y - 1, 0); j <= Math.min(y + 1, width - 1); j++) {
-        if (i == x && j == y) {
-          continue;
+  function Game(width, height, aliveFraction) {
+    this.width  = width;
+    this.height = height;
+    this.board  = newBoard(width, height, aliveFraction);
+
+
+    // Use the given drawing object to render this game.
+    this.render = function(d) {
+      d.drawBoard(this.board);
+    };
+
+    // Advance the board. Returns this for chaining.
+    this.step = function() {
+      var nextBoard = newBoard(this.width, this.height);
+
+      for (var i = 0; i < this.width; i++) {
+        for (var j = 0; j < this.height; j++) {
+          nextBoard[i][j] = this.nextState(this.board[i][j], this.neighborCount(i, j));
         }
-        if (board[i][j]) {
-          liveNeighbors += 1;
+      }
+
+      this.board = nextBoard;
+      return this;
+    };
+
+    // Return the next state of a cell that has been aliveFor a given number of
+    // rounds and its current neighbor count
+    this.nextState = function(aliveFor, neighborCount) {
+      if ((neighborCount === 3) || (neighborCount === 2 && aliveFor > 0)) {
+        return aliveFor + 1;
+      }
+      return 0;
+    };
+
+    // Count the number of live neighbors a given cell has.
+    this.neighborCount = function(x, y) {
+      var count = 0;
+      for (var i = Math.max(x - 1, 0); i <= Math.min(x + 1, height - 1); i++) {
+        for (var j = Math.max(y - 1, 0); j <= Math.min(y + 1, width - 1); j++) {
+          if (i === x && j === y) {
+            continue;
+          }
+
+          if (this.board[i][j] > 0) {
+            count++;
+          }
         }
       }
-    }
-    if ((livedFor && (liveNeighbors >= 2 && liveNeighbors <= 3)) || (!livedFor && liveNeighbors == 3)) {
-      return livedFor + 1;
-    }
-    return 0/*dead*/;
+      return count;
+    };
   }
 
-  self.next = function(board) {
-    var next = self.makeBoard();
-    for (var i = 0; i < height; i++) {
-      for (var j = 0; j < width; j++) {
-        next[i][j] = self.newCell(board, i, j);
-      }
-    }
-    return next;
-  }
+  return {
+    test : function(canvas, fraction, colors, pixelSize, fps) {
+      return new Canvas(canvas, colors, pixelSize, pixelSize);
+    },
 
-  self.seed = function() {
-    var newBoard = self.makeBoard();
-    for (var i = 0; i < height; i++) {
-      for (var j = 0; j < width; j++) {
-        newBoard[i][j] = (Math.random() < seedFraction) ? 1 : 0;
-      }
-    }
-    return newBoard;
-  }
+    play: function(canvas, fraction, colors, pixelSize, fps) {
+      var draw = new Canvas(canvas, colors, pixelSize, pixelSize),
+          game = new Game(draw.width, draw.height, fraction);
 
-  self.seedFraction = function(_) {
-    if (!arguments.length) { return seedFraction }
-    seedFraction = _;
-    return self;
-  }
-
-  self.width = function(_) {
-    if (!arguments.length) { return width; }
-    width = _;
-    return self;
-  }
-
-  self.height = function(_) {
-    if (!arguments.length) { return height; }
-    height = _;
-    return self;
-  }
-
-  return self;
-}
-
-function board() {
-  var cellWidth = 10,
-      cellHeight = 10,
-      breaks = [0, 1, 5, 10],
-      colors = ["#ffffff", "#67a9cf", "#1c9099", "#016c59"];
-
-  var self = function(selection) {
-    selection.each(function(data) {
-      var height = cellHeight * data.length,
-          width = cellWidth * data[0].length,
-          colorScale = d3.scale.linear().domain(breaks).range(colors).clamp(true);
-
-      var grid = d3.select(this).selectAll('svg').data([data]);
-      grid.enter().append('svg');
-      grid.attr('width', width).attr('height', height);
-
-      var rows = grid.selectAll('.row').data(data);
-      rows.enter()
-        .append('g')
-        .attr('class', 'row')
-        .attr('transform', function(d, i){ return 'translate(0,' + (cellHeight * i) + ')'}); 
-
-      var cells = rows.selectAll('.cell').data(function(d){ return d });
-      cells.enter()
-        .append('rect')
-          .classed('cell', true)
-          .attr('width', cellWidth)
-          .attr('height', cellHeight)
-          .attr('x', function(d, i) { return i * cellWidth })
-      // cells.classed('alive', function(d){ return d });
-      cells.style('fill', function(d){ return colorScale(d) });
-    });
-  }
-
-  self.cellWidth = function(_) {
-    if (!arguments.length) { return cellWidth; }
-    cellWidth = _;
-    return self;
-  }
-
-  self.cellHeight = function(_) {
-    if (!arguments.length) { return cellHeight; }
-    cellHeight = _;
-    return self;
-  }
-
-   return self;
-}
-
+      var step = function() {
+        setTimeout(function() {
+          game.step().render(draw);
+          requestAnimationFrame(step);
+        }, 1000 / fps);
+      };
+      requestAnimationFrame(step);
+    },
+  };
+})();
