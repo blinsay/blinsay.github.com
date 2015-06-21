@@ -7,21 +7,11 @@ var life = (function () {
     this.height      = Math.floor(canvas.height / pixelHeight);
 
     this.canvasWidth  = canvas.width;
-    this.canvasHeight = canvas.Height;
     this.ctx          = canvas.getContext('2d');
     this.imgData      = this.ctx.createImageData(canvas.width, canvas.height);
     this.data         = this.imgData.data;
 
     this.colors = colors;
-
-    this.drawBoard = function(board) {
-      for (var i = 0; i < this.width; i++) {
-        for (var j = 0; j < this.height; j++) {
-          this.drawCell(i, j, board[i][j]);
-        }
-      }
-      this.finish();
-    };
 
     this.drawCell = function(x, y, liveness) {
       this.setPixel.apply(this, [x, y].concat(this.pickColor(liveness)));
@@ -61,7 +51,7 @@ var life = (function () {
 
   newBoard = function(width, height, aliveFraction) {
     var board = new Array(height);
-    for (var i = 0; i < width; i++) {
+    for (var i = 0; i < height; i++) {
       board[i] = new Array(width);
       for (var j = 0; j < width; j++) {
         board[i][j] = (Math.random() < aliveFraction) ? 1 : 0;
@@ -78,15 +68,20 @@ var life = (function () {
 
     // Use the given drawing object to render this game.
     this.render = function(d) {
-      d.drawBoard(this.board);
+      for (var i = 0; i < this.height; i++) {
+        for (var j = 0; j < this.width; j++) {
+          d.drawCell(j, i, this.board[i][j]);
+        }
+      }
+      d.finish();
     };
 
     // Advance the board. Returns this for chaining.
     this.step = function() {
       var nextBoard = newBoard(this.width, this.height);
 
-      for (var i = 0; i < this.width; i++) {
-        for (var j = 0; j < this.height; j++) {
+      for (var i = 0; i < this.height; i++) {
+        for (var j = 0; j < this.width; j++) {
           nextBoard[i][j] = this.nextState(this.board[i][j], this.neighborCount(i, j));
         }
       }
