@@ -20,16 +20,28 @@
 <body>
   <div class="container bensway">
     <div class="row">
-      <div class="col-md-2 white ib padded text">
-        <div class="row">blinsay at gmail</div>
-        <div class="row"><a href="http://github.com/blinsay">github</a></div>
-        <div class="row"><a href="http://twitter.com/blinsay">twitter</a></div>
+      <div class="col-md-5 white ib padded text">
+        <h2 id="dumb-title">ben linsay has a website</h2>
+        <div>blinsay at gmail</div>
+        <div><a href="http://github.com/blinsay">github</a></div>
+        <div><a href="http://twitter.com/blinsay">twitter</a></div>
       </div>
     </div>
   </div>
   <canvas id="life" width="1440" height="1440" class="canvas"></canvas>
 </body>
 <script>
+  // dumb titles
+  var titles = [
+    "ben linsay has a website",
+    "ben linsay is an engineer",
+    "ben linsay should go outside",
+    "ben linsay wants to pet your dog",
+    "ben linsay would totally lend you his membership to the natural history museum",
+  ]
+  document.getElementById("dumb-title").innerHTML = titles[Math.floor(Math.random() * titles.length)];
+
+  // game colors
   var whiteDeadBlueLive = {
     dead: [239,243,128],
     live: [[8,81,156,200], [49,130,189,128], [107,174,214,128], [189,215,231,128]]
