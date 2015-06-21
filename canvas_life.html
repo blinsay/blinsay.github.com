@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>doing it bensway</title>
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <style >
+    .ib { display:inline-block; }
+    .padded { margin-top: 40px; margin-left: 20px; padding-left: 20px; padding-top: 10px; }
+    .white  { background: white }
+
+    .bensway { z-index: 2; position:absolute; left:0; top:0; }
+    .canvas  { z-index: 1; display:block; width:100%; height:100%; }
+  </style>
+  <script src="canvas_life.js"></script>
+</head>
+<body>
+  <div class="container bensway">
+    <div class="row">
+      <div class="col-md-2 white ib padded">
+        <div class="row">blinsay at gmail</div>
+        <div class="row"><a href="http://github.com/blinsay">github</a></div>
+        <div class="row"><a href="http://twitter.com/blinsay">twitter</a></div>
+      </div>
+    </div>
+  </div>
+  <canvas id="life" width="1440" height="1440" class="canvas"></canvas>
+</body>
+<script>
+  var whiteDeadBlueLive = {
+    dead: [239,243,128],
+    live: [[8,81,156,200], [49,130,189,128], [107,174,214,128], [189,215,231,128]]
+  }
+
+  life.play(document.getElementById('life'), 0.1, whiteDeadBlueLive, 3, 16);
+</script>
+</html>
