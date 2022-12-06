@@ -1,28 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>doing it bensway</title>
   <link href="css/bootstrap.min.css" rel="stylesheet">
-  <style >
-    div { font-size:inheret }
+  <style>
+    div {
+      font-size: inheret
+    }
 
-    .text { font-size:1.05em; }
-    .ib { display:inline-block; }
-    .padded { margin-top: 40px; margin-left: 20px; padding-left: 20px; padding-top: 10px; }
-    .white  { background: white }
+    .text {
+      font-size: 1.05em;
+    }
 
-    .bensway { z-index: 2; position:absolute; left:0; top:0; }
-    .canvas  { z-index: 1; display:block; position:fixed; overflow-y:scroll; }
+    .ib {
+      display: inline-block;
+    }
+
+    .padded {
+      margin-top: 40px;
+      margin-left: 20px;
+      padding-left: 20px;
+      padding-top: 10px;
+    }
+
+    .white {
+      background: white
+    }
+
+    .bensway {
+      z-index: 2;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .canvas {
+      z-index: 1;
+      display: block;
+      position: fixed;
+      overflow-y: scroll;
+    }
+
   </style>
   <script src="js/life.js"></script>
   <script src="js/bensway.js"></script>
 </head>
+
 <body>
   <div class="container bensway">
     <div class="row">
       <div class="col-md-5 white ib padded text">
-        <h2 id="dumb-title">ben linsay has a website</h2>
+        <h2 id="dumb-title">ben linsay is a software engineer</h2>
         <div>blinsay at gmail</div>
         <div><a href="http://github.com/blinsay">github</a></div>
         <div><a href="http://twitter.com/blinsay">twitter</a></div>
@@ -32,4 +62,5 @@
   </div>
   <canvas id="life" width="1440" height="1440" class="canvas"></canvas>
 </body>
+
 </html>
