@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rust Reading List</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    div {
+      font-size: inheret
+    }
+
+    .text {
+      font-size: 1.0em;
+    }
+
+    .ib {
+      display: inline-block;
+    }
+
+    .white {
+      background: white
+    }
+
+    pre {
+      display: inline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md white ib text title">
+        <h2>Rust Reading List</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md white ib text">
+        Rust has a reputation as a hard programming language to learn, despite <a
+          href="https://opensource.googleblog.com/2023/06/rust-fact-vs-fiction-5-insights-from-googles-rust-journey-2022.html">evidence
+          to the contrary</a>. My experience coming to Rust was deeply pleasant, and
+        hopefully this reading list makes your experience just as pleasant.
+        <br><br>
+        If you are someone who understands the difference between a move- and copy-constructors
+        and have used
+        <pre>unique_ptr</pre> and
+        <pre>shared_ptr</pre> in anger, you're starting
+        your Rust journey ahead of everyone else. However, you still have things to (un)learn. The compiler will tell
+        you that patterns from your past life are wrong and you're going to have to live with it. Find new ways to do
+        things, instead of brute-forcing your way through with
+        <pre>unsafe</pre>.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://doc.rust-lang.org/book/">The Rust Programming Language</a> - The Book. This is a great place to
+        start, even if you're a C++ veteran. It does an excellent job covering the breadth of the language and
+        introduces you to
+        <pre>cargo</pre> and the <a href="https://crates.io">crates.io</a> ecosystem.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://rust-unofficial.github.io/too-many-lists/">Learn Rust With Entirely Too Many Linked Lists</a> -
+        A tour through everyone's favorite data structure, by one of the authors of Rust's standard library
+        collections. Starts off basic and veers into advanced territory quite quickly. It's worth reading while
+        you're new to the language, and worth coming back to as you get more comfortable.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://cliffle.com/blog/rust-typestate/">The Typestate Pattern in Rust</a> -
+        A very high-quality, straightforward demonstration of how to use the type system to help you design an API.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://blog.burntsushi.net/rust-error-handling/">Rust Error Handling</a> -
+        A long read on error handling from Andrew Gallant, the author of
+        <pre>ripgrep</pre> and the
+        <pre>regex</pre> crate. This post walks through idiomatic error handling and motivates
+        the
+        <pre>?</pre> operator. Error API design is one of the
+        most subtle, difficult parts of Rust to get right. Andrew's blog in general is excellent (I like his
+        <a href="https://blog.burntsushi.net/bstr/">bstr</a> and <a href="https://blog.burntsushi.net/csv/">csv</a>
+        posts).
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://mmapped.blog/posts/12-rust-error-handling.html">Designing error types in Rust</a> -
+        This post builds on Andrew Gallant's post on errors
+        with a focus on what you want to represent in an error API. This post is also where you'll really
+        start noticing that Rust is secretly an ML-style language. Lean into the functional programming, and
+        follow the links to <a href="https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/">Parse Don't
+          Validate</a>.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text ">
+        <h3>Async Rust</h3><br>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md white ib text">
+        Async Rust is a lot. It can feel like it's own sub-language and a completely separate ecosystem. There's
+        a lot to learn here. Try to have a solid grasp on the fundamentals of sync Rust before diving into
+        async.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://rust-lang.github.io/async-book/">Asynchronous Programming in Rust</a> -
+        The async version of The Book. This is still incomplete, but a good place to start. You'll
+        get a basic tour of what Rust Futures are and learn what the hell is going on with
+        <pre>.await</pre> and
+        <pre>Pin</pre>. After reading this book, read the module documentation for <a
+          href="https://doc.rust-lang.org/std/pin/index.html">pin</a>. You will return to it many, many times.
+      </div>
+    </div>
+    <div class="row"><br></div>
+    <div class="row">
+      <div class="col-md white ib text">
+        <a href="https://cliffle.com/blog/async-inversion/">How to think about async/await in Rust</a> -
+        A higher-level explanation of what async is and what it allows you to do at a high level. Since
+        most of the async documentation is how-to, this is a nice refresher.
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
