@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="utf-8">
+
+    {% if page.title %}
+    {% set title = page.title %}
+    {% elif section.title %}
+    {% set title = section.title %}
+    {% elif config.title %}
+    {% set title = config.title %}
+    {% endif %}
+    {% if title %}<title>{{ title }}</title>{% endif %}
+
+    {% if config.generate_feed %}
+    {% block feed %}
+    <link rel="alternate" type="application/atom+xml" title="RSS" href="{{ get_url(path=" atom.xml",
+        trailing_slash=false) }}">
+    {% endblock feed %}
+    {% endif %}
+
+    {% if page.permalink %}
+    {% set url = page.permalink %}
+    {% elif section.permalink %}
+    {% set url = section.permalink %}
+    {% elif config.base_url %}
+    {% set url = config.base_url %}
+    {% endif %}
+    <link rel="canonical" href="{{ url | safe }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url | safe }}">
+
+    {% if page.extra.include_js %}
+    {% set include_js = page.extra.include_js %}
+    {% elif section.extra.include_js %}
+    {% set include_js = section.extra.include_js %}
+    {% endif %}
+
+    {% if include_js %}
+    {% for source in include_js %}
+    <script src="{{ get_url(path=source, trailing_slash=false) | safe }}" type="text/javascript"></script>
+    {% endfor %}
+    {% endif %}
+
+    {% block css %}
+    <link rel="stylesheet" href="{{ get_url(path='style.css', trailing_slash=false) | safe }}" />
+    {% endblock css %}
+</head>
+
+<body theme="auto">
+    <div class="w">
+        <header>
+            {% if config.extra.header_nav %}
+            <nav>
+                {% for nav_item in config.extra.header_nav %}
+                <a href="{{ nav_item.url | safe }}" {% if nav_item.new_tab %}target="_blank" rel="noreferrer noopener"
+                    {% endif %}>{{ nav_item.name }}</a>
+                {% endfor %}
+            </nav>
+            {% endif %}
+            {% block header %}{% if title %}<h1>{{ config.title }}</h1>{% endif %}{% endblock header %}
+        </header>
+        <main class="page-content" aria-label="Content">
+            {% block content %}{% endblock content %}
+        </main>
+        <footer>
+            {% block footer %}{% endblock footer %}
+            {% if config.extra.footer_nav %}
+            <nav>
+                {% for nav_item in config.extra.footer_nav %}
+                <a href="{{ nav_item.url | safe }}">{{ nav_item.name }}</a>
+                {% endfor %}
+            </nav>
+            {% endif %}
+        </footer>
+    </div>
+</body>
+
+</html>
