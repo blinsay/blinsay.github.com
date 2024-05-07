@@ -6,6 +6,8 @@ include_js = [
 ]
 +++
 
-an online presence
+An online presence
 
 <canvas id="life" style="max-width: 100%;"></canvas>
+
+[github](https://github.com/blinsay) [linkedin](https://linkedin.com/in/blinsay)
