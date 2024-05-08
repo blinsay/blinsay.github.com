@@ -8,11 +8,12 @@ window.onload = () => {
   };
 
   function setup() {
-    var canvas = document.getElementById('life'),
-      ctx = canvas.getContext('2d');
+    var canvas = document.getElementById('life');
+    var ctx = canvas.getContext('2d');
 
-    ctx.canvas.width = window.innerWidth;
-    ctx.canvas.height = window.innerHeight;
+    var parent = canvas.parentElement;
+    ctx.canvas.width = parent.clientWidth;
+    ctx.canvas.height = parent.clientWidth;
 
     life.play(canvas, 0.1, whiteDeadBlueLive, 4, 16);
   }

@@ -45,7 +45,8 @@
     {% endfor %}
     {% endif %}
 
-    <link rel="icon" type="image/png" size="16x16" href="favicon.png">
+    <link rel="icon" type="image/png" size="16x16" href="{{ get_url(path='favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" size="32x32" href="{{ get_url(path='favicon-32x32.png') }}">
     {% block css %}
     <link rel="stylesheet" href="{{ get_url(path='style.css', trailing_slash=false) | safe }}" />
     {% endblock css %}
