@@ -50,6 +50,11 @@
     {% block css %}
     <link rel="stylesheet" href="{{ get_url(path='style.css', trailing_slash=false) | safe }}" />
     {% endblock css %}
+    {% block rss %}
+    <link rel="alternate" type="application/atom+xml" title="atom"
+        href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
+    {% endblock %}
+
 </head>
 
 <body theme="auto">

@@ -1,6 +1,8 @@
 base_url = "https://blinsay.com"
-title = "ben linsay"
+title = "Ben Linsay"
+author = "Ben Linsay"
 
+generate_feed = true
 minify_html = true
 compile_sass = true
 build_search_index = false

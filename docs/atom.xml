@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Ben Linsay</title>
+    <link rel="self" type="application/atom+xml" href="https://blinsay.com/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://blinsay.com"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-05-06T00:00:00+00:00</updated>
+    <id>https://blinsay.com/atom.xml</id>
+    <entry xml:lang="en">
+        <title>verytmp</title>
+        <published>2024-05-06T00:00:00+00:00</published>
+        <updated>2024-05-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Ben Linsay
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://blinsay.com/blog/verytmp/"/>
+        <id>https://blinsay.com/blog/verytmp/</id>
+        
+        <content type="html" xml:base="https://blinsay.com/blog/verytmp/">&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;blinsay&#x2F;verytmp&quot;&gt;&lt;code&gt;verytmp&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; came out of a previous employer&#x27;s problem with badly behaved programs that weren&#x27;t cleaning up large temporary files. Inevitably, someone who had to work with that code - and usually not the person who wrote the code! - would fill up their tempdir and spend a few minutes or hours being extremely confused about why other programs were suddenly throwing errors.&lt;&#x2F;p&gt;
+&lt;p&gt;Our &lt;a href=&quot;https:&#x2F;&#x2F;twitter.com&#x2F;geofft&quot;&gt;local mad scientist&lt;&#x2F;a&gt; realized that this was obviously a problem for linux namespaces, and &lt;code&gt;verytmp&lt;&#x2F;code&gt; was born. By using (abusing?) a private mount namespace, &lt;code&gt;verytmp&lt;&#x2F;code&gt; takes advantage of the fact that &lt;a href=&quot;https:&#x2F;&#x2F;unix.stackexchange.com&#x2F;questions&#x2F;212172&#x2F;what-happens-if-the-last-process-in-a-namespace-exits&quot;&gt;mount namespaces are garbage collected&lt;&#x2F;a&gt; to give you a fully-functional in-memory filesystem that gets cleaned up when your process exits without relying on &lt;strong&gt;any&lt;&#x2F;strong&gt; userspace code. No more full &lt;code&gt;&#x2F;tmp&lt;&#x2F;code&gt;, no more strange errors.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;blinsay&#x2F;verytmp&quot;&gt;The code is here&lt;&#x2F;a&gt;, and was a lot of fun to write. Because the goal is to create a detached mount namespace, you end up with a filesystem you can&#x27;t reference with a absolute paths, which means that your API for accessing files and directories has to look a little bit different than the usual interfaces. Instead you end up with something a lot more like &lt;code&gt;openat2&lt;&#x2F;code&gt; and friends, which was both a fun exercise in API design and a fun excuse &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;nix-rust&#x2F;nix&#x2F;pull&#x2F;2339&quot;&gt;to contribute openat2 bindings to the &lt;code&gt;nix&lt;&#x2F;code&gt; crate&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Rust reading list</title>
+        <published>2024-01-30T00:00:00+00:00</published>
+        <updated>2024-01-30T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Ben Linsay
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://blinsay.com/blog/rust-reading-list/"/>
+        <id>https://blinsay.com/blog/rust-reading-list/</id>
+        
+        <content type="html" xml:base="https://blinsay.com/blog/rust-reading-list/">&lt;p&gt;Rust has a reputation as a hard programming language to learn, despite &lt;a href=&quot;https:&#x2F;&#x2F;opensource.googleblog.com&#x2F;2023&#x2F;06&#x2F;rust-fact-vs-fiction-5-insights-from-googles-rust-journey-2022.html&quot;&gt;evidence to the contrary&lt;&#x2F;a&gt;. My experience coming to Rust was deeply pleasant, and hopefully the things on your reading list make your experience just as pleasant.&lt;&#x2F;p&gt;
+&lt;p&gt;If you are someone who understands the difference between a move- and copy-constructors and have used &lt;code&gt;unique_ptr&lt;&#x2F;code&gt; and &lt;code&gt;shared_ptr&lt;&#x2F;code&gt; in anger, you&#x27;re starting your Rust journey ahead of everyone else. However, you still have things to (un)learn. The compiler will tell you that patterns from your past life are wrong and you&#x27;re going to have to live with it. Find new ways to do things, instead of brute-forcing your way through with &lt;code&gt;unsafe&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;doc.rust-lang.org&#x2F;book&#x2F;%22&quot;&gt;&lt;strong&gt;The Rust Programming Language&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - The Book. This is a great place to start, even if you&#x27;re a C++ veteran. It does an excellent job covering the breadth of the language and introduces you to &lt;code&gt;cargo&lt;&#x2F;code&gt; and the &lt;a href=&quot;https:&#x2F;&#x2F;crates.io&quot;&gt;crates.io&lt;&#x2F;a&gt; ecosystem.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;rust-unofficial.github.io&#x2F;too-many-lists&#x2F;&quot;&gt;&lt;strong&gt;Learn Rust With Entirely Too Many Linked Lists&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - A tour through everyone&#x27;s favorite data structure, by one of the authors of Rust&#x27;s standard library collections. Starts off basic and veers into advanced territory quite quickly. It&#x27;s worth reading while you&#x27;re new to the language, and worth coming back to as you get more comfortable.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;cliffle.com&#x2F;blog&#x2F;rust-typestate&#x2F;&quot;&gt;&lt;strong&gt;The Typestate Pattern in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - A very high-quality, straightforward demonstration of how to use the type system to help you design an API.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;blog.burntsushi.net&#x2F;rust-error-handling&quot;&gt;&lt;strong&gt;Rust Error Handling&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - A long read on error handling from Andrew Gallant, the author of &lt;code&gt;ripgrep&lt;&#x2F;code&gt; and the &lt;code&gt;regex&lt;&#x2F;code&gt; crate. This post walks through idiomatic error handling and motivates the &lt;code&gt;?&lt;&#x2F;code&gt; operator. Error API design is one of the most subtle, difficult parts of Rust to get right. Andrew&#x27;s blog in general is excellent (I like his &lt;a href=&quot;https:&#x2F;&#x2F;blog.burntsushi.net&#x2F;bstr&#x2F;&quot;&gt;bstr&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;blog.burntsushi.net&#x2F;csv&#x2F;&quot;&gt;csv&lt;&#x2F;a&gt; posts too).&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;mmapped.blog&#x2F;posts&#x2F;12-rust-error-handling.html&quot;&gt;&lt;strong&gt;Designing error types in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - This post builds on Andrew Gallant&#x27;s post on errors with a focus on what you want to represent in an error API. This post is also where you&#x27;ll really start noticing that Rust is secretly an ML-style language. Lean into the functional programming, and follow the links to &lt;a href=&quot;https:&#x2F;&#x2F;lexi-lambda.github.io&#x2F;blog&#x2F;2019&#x2F;11&#x2F;05&#x2F;parse-don-t-validate&#x2F;&quot;&gt;&lt;strong&gt;Parse, Don&#x27;t Validate&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;Async Rust is a lot. It can feel like it&#x27;s own sub-language and a completely separate ecosystem. There&#x27;s a lot to learn here. If you can, try to have a solid grasp on the fundamentals of Rust and the posts above before diving into async.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;rust-lang.github.io&#x2F;async-book&#x2F;%22&quot;&gt;&lt;strong&gt;Asynchronous Programming in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - The async version of The Book. This is still incomplete, but a good place to start. You&#x27;ll get a basic tour of what Rust Futures are and learn what the hell is going on with &lt;code&gt;await&lt;&#x2F;code&gt; and &lt;code&gt;Pin&lt;&#x2F;code&gt;. After reading this book, &lt;a href=&quot;https:&#x2F;&#x2F;doc.rust-lang.org&#x2F;std&#x2F;pin&#x2F;index.html&quot;&gt;read the module documentation for &lt;code&gt;std::pin&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;. You will return to it many, many times.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;cliffle.com&#x2F;blog&#x2F;async-inversion&#x2F;&quot;&gt;&lt;strong&gt;How to think about async&#x2F;await in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt; - A higher-level explanation of what async is and what it allows you to do at a high level. Since most of the async documentation is how-to, this is a nice change of pace.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>An Bug</title>
+        <published>2018-08-07T00:00:00+00:00</published>
+        <updated>2018-08-07T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Ben Linsay
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://blinsay.com/blog/an-bug/"/>
+        <id>https://blinsay.com/blog/an-bug/</id>
+        
+        <content type="html" xml:base="https://blinsay.com/blog/an-bug/">&lt;p&gt;An Bug is &lt;a href=&quot;https:&#x2F;&#x2F;vimeo.com&#x2F;44984049&quot;&gt;a talk by Joe Damato&lt;&#x2F;a&gt; from 2012 that has remained one of my favorite talks about software, ever. It inspired a short-lived podcast series that I hosted on on &lt;a href=&quot;https:&#x2F;&#x2F;www.producthunt.com&#x2F;products&#x2F;bumpers&quot;&gt;bumpers.fm&lt;&#x2F;a&gt; (rip) about debugging software in production.&lt;&#x2F;p&gt;
+&lt;p&gt;Grab a shovel.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;br &#x2F;&gt;
+&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;intro.m4a&quot;&gt;Introduction&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;jeff-hodges.m4a&quot;&gt;Jeff&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;zac-duncan.m4a&quot;&gt;Zac&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;caitie-mccaffrey.m4a&quot;&gt;Caitie&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;cliff-moon.m4a&quot;&gt;Cliff&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
