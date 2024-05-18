@@ -1,7 +1,7 @@
 User-agent: *
 Disallow:
 Allow: /
-Sitemap: https://blinsay.com/sitemap.xml
+Sitemap: {{ get_url(path="sitemap.xml") }}
 
 # Disallow GPT bots, borrowed from nytimes.com
 
