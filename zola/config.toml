@@ -8,7 +8,8 @@ compile_sass = true
 build_search_index = false
 
 [markdown]
-highlight_code = false
+highlight_code = true
+highlight_theme = "base16-ocean-light"
 
 [extra]
 header_nav = [{ name = "home", url = "/" }, { name = "posts", url = "/blog" }]
