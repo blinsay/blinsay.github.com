@@ -2,52 +2,26 @@
 title = "Implementing CVM For Fun and Fun"
 date = 2024-05-28
 description = "An educational sketch"
-
-[extra]
-hidden = true
 +++
 
-There's been a new Knuth paper about a distinct-values sketch floating around my corner of the internet. Despite having not interacted with a sketch professionally in quite a long time, sketches are still [near and dear to my heart][pwl_hll] and this felt like a fun opportunity to implement something new.
+There's been [a new Knuth paper][cvm_note] about a distinct-values sketch floating around my corner of the internet. Despite having not interacted with a sketch professionally in quite a long time, sketches are still [near and dear to my heart][pwl_hll] and this felt like a fun opportunity to implement something new.
 
-For the unfamiliar, probabilistic sketching is cheating at data structures by using statistics. In return for accepting some amount of error, and usually a bounded amount, you get to break the fundamental laws of computer science. A [Bloom filter][bloom_filter] is the most famous example, but sketches like HyperLogLog and CountMinSketch have been showing up in industry with some regularity.
+For the unfamiliar, probabilistic sketching is cheating at data structures by using statistics. In return for accepting some amount of error, usually a bounded amount, you get to break what feel like fundamental laws of computer science. [Bloom filters][bloom_filter] are probably the most familiar sketch to software engineers, but [HyperLogLog][hll_paper] and CountMinSketch have been showing up more regularly over the last decade.
 
-The sketch in Knuth's note is a sketch that, like [HyperLogLog][hll_paper], gives an estimator for the distinct element problem, aka the "how big is my set" problem. The new algorithm is interesting in that it doesn't solve the problem with tighter bounds or while using less space or offer any improvement over HLLs and other state-of-the-art sketches. It's intended as a teaching tool and is an algorithm that students can implement and can write coherent proofs about without the [graduate level math skills][mellin] that are table stakes for proving meaningful bounds on other sketches.
+The sketch in Knuth's note is a sketch that, like HyperLogLog, gives an estimator for the distinct element problem, aka the "how big is my set" problem. This new algorithm is interesting in that it doesn't solve the problem with tighter bounds or while using less space or offer any improvement over HLLs and other state-of-the-art sketches. Instead, it's intended as a teaching tool - it's an algorithm that students can implement and can write coherent proofs about without the [graduate level math skills][mellin] that are required to prove meaningful bounds on other sketches.
 
 [bloom_filter]: https://en.wikipedia.org/wiki/Bloom_filter
 [pwl_hll]: https://www.youtube.com/watch?v=y3fTaxA8PkU
 [hll_paper]: https://dmtcs.episciences.org/3545/pdf
 [mellin]: https://mathworld.wolfram.com/MellinTransform.html
 
----
-
-What Knuth calls CVM was originally proposed by [Sourav Chakraborty, N. V. Vinodchandran, and Kuldeep S. Meel][cvm_arxiv] in a paper that explicitly targets teaching. The original paper doesn't even focus on implementation and data structures. It aims itself directly at students looking to write proofs about the algorithm. The paper works through three versions of this algorithm and spends most of its time on proofs of the error bounds of each iteration, building on the proofs from previous iterations to prove things about the next.
-
-All three versions of the algorithm work by keeping a set of elements seen in the stream until it hits some predetermined size. At that point, the algorithm discards elements of the set with some probability to keep the set below that size. The first iteration of the algorithm discards every element with probability 1/2 and terminates if the set is ever empty. The second iteration simply removes the termination condition. The third and final iteration introduces randomness and uses it to keep the set of observed elements below the size threshold.
-
-[cvm_arxiv]: https://arxiv.org/abs/2301.10191
-
-On its own, Chakraborty et. al feels unapproachable to anyone who is not a student of probability theory - it's _very_ focused on the math. As someone who's been away from that kind of math for more than a decade, I absolutely can't follow the proofs here. Implementation and data structures appear to be an afterthought - the third iteration of the algorithm depends on keeping around an infinitely growing string of random bits.
-
----
-
-[Along comes Donald Knuth][cvm_note], with a celebration of this algorithm.
-
-Knuth makes the whole thing much more approachable to the lay programmer. Knuth starts at the end with what he alternately calls Algorithm D and CVM (named after the three original authors), and focuses on the algorithm and intuitive proof that it works before diving in. Knuth, always himself, also spends plenty of time on the data structures required to make CVM fast and efficient.
-
-After laying out the algorithm he dives into proofs as well, building back up from simpler algorithms to proofs on the bounds of Algorithm D. Interestingly, Knuth seems to believe that it's possible to prove tighter bounds on Algorithm D.
-
-> To conclude this study, I had hoped to use Theorem D to sharpen the results of Corollary T, because the actual performance of Algorithm D in practice is noticeably better than the comparatively weak theoretical guarantees that are derivable from the coarser Algorithm D. Algorithm D is quite simple, so I believed that I’d be able to analyze its behavior without great difficulty. Alas, after several weeks of trying, I must confess that I’ve failed to get much further. Indeed, I think Algorithm D may well be the simplest algorithm that lies beyond my current ability to carry out a sharp
-analysis!
-
-Watch out, undergraduates.
-
 [cvm_note]: https://www-cs-faculty.stanford.edu/~knuth/papers/cvm-note.pdf
 
 ---
 
-At an extremely high level, Knuth's CVM works by keeping a set of elements seen so far paired with a randomly sampled value he dubs a "volatility". Each (non-distinct) element in the stream is assigned a volatility and is sampled if it has a lower volatility than any other element sampled so far and when a new element is sampled the algorithm evicts the element paired with the highest volatility. Whether or not the new element is sampled CVM updates a probability parameter `p`. At any point in time, the size of the sampled set divided by `p` is an unbiased estimator of the number of unique elements in the stream.
+At an extremely high level, CVM works by keeping a fixed-size set of elements seen. Each (non-distinct) element in the stream is paired with a randomly sampled per-element value that Knuth dubs a volatility as it arrives, and is sampled if it has a lower volatility than any other element sampled so far. To keep the size of the sampled set bounded, CVM evicts the previous element with the highest volatility. Whether or not a new element is sampled, CVM updates a parameter `p`, and at any point in time the size of the sampled set divided by `p` is an unbiased estimator of the number of unique elements in the stream.
 
-The high-level explanation glosses over important details in the algorithm that handle edge cases and correct for sampling bias, but  I found that an actual implementation is as readable and concise as the pseudocode Knuth presents for Algorithm D.
+This high-level explanation glosses over important details in the algorithm that handle edge cases and correct for sampling bias. An actual implementation is as readable and concise as any pseudocode for the algorithm would be.
 
 ```rust
 struct Cvm {
@@ -109,11 +83,11 @@ The only step in Knuth's algorithm D that it doesn't make sense to represent exp
 
 Knuth's implementation of the algorithm is [available as a literate program][cvm_cweb] alongside his note. If you're [feeling adventurous][texlive], you can turn it into a stripped C file or a [rendered PDF][cvm_rendered].
 
-I found Knuth's implementation difficult to follow. It freely mixes the CVM implementation with the guts of a hash-table implementation and with all of the code for building and searching a treap. None of those details really matter for the correctness of the CVM algorithm itself and almost all of the complexity seems to come from the hash table and treap code.
+Knuth's implementation freely mixes the CVM implementation with the guts of a hash-table implementation and with all of the code for building and searching [a treap][treap_wiki]. None of those details really matter for the correctness of the CVM algorithm itself. Almost all of the complexity in Knuth's implementation seems to come from the hash table and treap code, and it obscures how simple CVM is at its core.
 
-I spent a while staring at the treap implementation before deciding to ignore it entirely. While the treap is extremely important to the implementation of the algorithm if you'd like it to be fast (and a very cool data structure) it has nothing to do with whether or not the implementation correct.
+I spent a while staring at the treap implementation before deciding to ignore it entirely in my implementation. While the treap is extremely important to the implementation of the algorithm if you'd like it to be fast (and a very cool data structure) it has nothing to do with whether or not the implementation is correct.
 
-It turns out it's fairly easy to fake a treap with a sorted array:
+Plus, it turns out that it's fairly easy to fake a treap with a sorted array:
 
 ```rust
 #[derive(Debug)]
@@ -165,10 +139,11 @@ It's certainly not the prettiest or fastest thing in the world, but it lets us g
 [texlive]: https://tug.org/texlive/
 [cvm_cweb]: https://cs.stanford.edu/~knuth/programs/cvm-estimates.w
 [cvm_rendered]: cvm-estimates.pdf
+[treap_wiki]: https://en.wikipedia.org/wiki/Treap
 
 ---
 
-To test, I ran my implementation against a stream of random numbers generated by the [`rand` crate][rand]'s default RNG and compared against a `HashSet` of the actual values. These tests generated elements until the HashSet hit 1,000,000 unique elements.
+To test, I ran my implementation against a stream of random numbers generated by the [`rand` crate][rand]'s default RNG and compared against a `HashSet` of the actual values. These tests generated elements until the HashSet hit 1,000,000 unique elements. The full implementation and test harness are available [on GitHub][blinsay/cvm].
 
 After 10 trials at each buffer size, my toy implementation appears to the naked eyeball to be close enough to Knuth's results for `Stream A1` - random data - that I'm happy to call this a working implementation.
 
@@ -179,3 +154,17 @@ Eyeballing this is as far as I went with analysis because the bounds that Knuth 
 It really is quite astonishing that this is a good estimator. Given how simple the code is, and Knuth's ringing endorsement, I wouldn't be the least bit surprised if it makes it into more than a few CS textbooks.
 
 [rand]: https://crates.io/crates/rand
+
+[blinsay/cvm]: https://github.com/blinsay/cvm
+
+---
+
+What Knuth calls CVM is an algorithm proposed by [Sourav Chakraborty, N. V. Vinodchandran, and Kuldeep S. Meel][cvm_arxiv] in a paper that explicitly targets teaching probability theory. The original paper doesn't focus on implementation and data structures; it's entirely focused on the math, with no ink spilled on how a practitioner might implement these algorithms - the algorithm that becomes Knuth's CVM/Algorithm D depends on an infinitely growing string of bits.
+
+The original paper makes no concession to the practicing programmer, preferring to focus entirely on building up to the final algorithm in a series of proofs. Knuth's note turns that structure on its head and starts with the final algorithm, some empirical results, and only then introduces simpler versions of the algorithm to make the proofs approachable.
+
+In both papers, the math is still quite dense and only ends up proving fairly loose error bounds on the final algorithm. CVM seems to perform quite well in practice, and Knuth believes tighter bounds are possible. Ironically, the math has so far proven too difficult, even for Knuth. Watch out, undergraduates.
+
+> To conclude this study, I had hoped to use Theorem D to sharpen the results of Corollary T, because the actual performance of Algorithm D in practice is noticeably better than the comparatively weak theoretical guarantees that are derivable from the coarser Algorithm D. Algorithm D is quite simple, so I believed that I’d be able to analyze its behavior without great difficulty. Alas, after several weeks of trying, I must confess that I’ve failed to get much further. Indeed, I think Algorithm D may well be the simplest algorithm that lies beyond my current ability to carry out a sharp analysis!
+
+[cvm_arxiv]: https://arxiv.org/abs/2301.10191
