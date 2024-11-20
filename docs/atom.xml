@@ -22,7 +22,13 @@
         <link rel="alternate" type="text/html" href="https://blinsay.com/blog/compound-keys/"/>
         <id>https://blinsay.com/blog/compound-keys/</id>
         
-        <content type="html" xml:base="https://blinsay.com/blog/compound-keys/">&lt;p&gt;I ran into a weird complexity cliff with Rust&#x27;s &lt;code&gt;HashMap&lt;&#x2F;code&gt; and lifetimes
+        <content type="html" xml:base="https://blinsay.com/blog/compound-keys/">&lt;hr &#x2F;&gt;
+&lt;p&gt;&lt;strong&gt;UPDATE:&lt;&#x2F;strong&gt; Less than 30 minutes after posting this, &lt;a href=&quot;https:&#x2F;&#x2F;bsky.app&#x2F;profile&#x2F;did:plc:jlnnta4zi2luwhy44wb4v3hh&quot;&gt;Andrew Werner&lt;&#x2F;a&gt;
+came along with a really nice answer. It&#x27;s now included as the bottom of the
+post so you can walk through a few ways to almost solve this problem before
+hitting an actual answer.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;I ran into a weird complexity cliff with Rust&#x27;s &lt;code&gt;HashMap&lt;&#x2F;code&gt; and lifetimes
 the other day. It&#x27;s enough of a head scratcher that I thought I&#x27;d write it
 up and see if anyone on the broader internet knew what was going on.&lt;&#x2F;p&gt;
 &lt;p&gt;The rest of this post assumes you&#x27;re comfortable enough with Rust to
@@ -135,6 +141,7 @@ makes sense to you.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;derive&lt;&#x2F;span&gt;&lt;span&gt;(Clone, Debug, PartialEq, Eq, Hash)]
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Host&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; this is now a Cow&amp;lt;&amp;#39;a, str&amp;gt; instead of a String.
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostname&lt;&#x2F;span&gt;&lt;span&gt;: Cow&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;str&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;,
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;port&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,
 &lt;&#x2F;span&gt;&lt;span&gt;}
@@ -146,10 +153,14 @@ makes sense to you.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;HostStats {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; store keys as Host&amp;lt;&amp;#39;static&amp;gt; so we don&amp;#39;t have to let lifetime
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; annotations go viral.
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;stats&lt;&#x2F;span&gt;&lt;span&gt;: HashMap&amp;lt;Host&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;static&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;, Stats&amp;gt;,
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl &lt;&#x2F;span&gt;&lt;span&gt;HostStats {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; get now needs some lifetimes - we have to tell the compiler that &amp;#39;b
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; outlives &amp;#39;a, otherwise it gets a bit confused about our key types.
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;b&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostname&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;b str&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;port&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; Option&amp;lt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt; Stats&amp;gt; {
 &lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; host = Host {
 &lt;&#x2F;span&gt;&lt;span&gt;            hostname: Cow::from(hostname),
@@ -159,6 +170,8 @@ makes sense to you.&lt;&#x2F;p&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.stats.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;host)
 &lt;&#x2F;span&gt;&lt;span&gt;    }
 &lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; when we save data, we&amp;#39;re dealing with owned hostnames, so inferred
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a7adba;&quot;&gt;&#x2F;&#x2F;&#x2F; lifetimes work here.
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;record&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;mut &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostname&lt;&#x2F;span&gt;&lt;span&gt;: String, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;port&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sent&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;usize&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;errors&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;usize&lt;&#x2F;span&gt;&lt;span&gt;) {
 &lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; host = Host {
 &lt;&#x2F;span&gt;&lt;span&gt;            hostname: Cow::from(hostname),
@@ -195,12 +208,46 @@ if you&#x27;d like to mess with it yourself.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;p&gt;I ended up working through this problem by working around it; the compound key
 lookup didn&#x27;t end up being important to my problem. If it had been, I would
-have taken the excellent suggestion to use the &lt;a href=&quot;https:&#x2F;&#x2F;docs.rs&#x2F;hashbrown&#x2F;0.15.1&#x2F;hashbrown&#x2F;index.html&quot;&gt;hashbrown&lt;&#x2F;a&gt;
+have taken &lt;a href=&quot;https:&#x2F;&#x2F;bsky.app&#x2F;profile&#x2F;directxman12.dev&quot;&gt;Solly&#x27;s&lt;&#x2F;a&gt; excellent
+suggestion to use the &lt;a href=&quot;https:&#x2F;&#x2F;docs.rs&#x2F;hashbrown&#x2F;0.15.1&#x2F;hashbrown&#x2F;index.html&quot;&gt;hashbrown&lt;&#x2F;a&gt;
 crate directly.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;code&gt;hashbrown&lt;&#x2F;code&gt; gives you two ways out of this - &lt;code&gt;get&lt;&#x2F;code&gt; is defined in terms of an
 &lt;code&gt;Equivalent&lt;&#x2F;code&gt; trait instead of &lt;code&gt;Borrow&lt;&#x2F;code&gt; and, if you really need it, the
 &lt;a href=&quot;https:&#x2F;&#x2F;docs.rs&#x2F;hashbrown&#x2F;0.15.1&#x2F;hashbrown&#x2F;struct.HashMap.html#method.raw_entry_mut&quot;&gt;raw entry API&lt;&#x2F;a&gt;
 is right there.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;Less than 30 minutes after posting this, I got some answers!&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bsky.app&#x2F;profile&#x2F;did:plc:jlnnta4zi2luwhy44wb4v3hh&quot;&gt;Andrew Werner&lt;&#x2F;a&gt;
+came through with an &lt;a href=&quot;https:&#x2F;&#x2F;play.rust-lang.org&#x2F;?version=stable&amp;amp;mode=debug&amp;amp;edition=2021&amp;amp;gist=8faf0b693bec2f1b1975ec3e74cbac5d&quot;&gt;extremely nice way to define key types&lt;&#x2F;a&gt;.
+The &lt;code&gt;Borrow&lt;&#x2F;code&gt; trait requires you to be able to return a reference to the borrowed
+type, so Andrew split the &lt;code&gt;Host&lt;&#x2F;code&gt; into an inner &lt;code&gt;HostKey&lt;&#x2F;code&gt; and an outer &lt;code&gt;Host&lt;&#x2F;code&gt; so
+that the &lt;code&gt;Host&lt;&#x2F;code&gt; can be borrowed as a &lt;code&gt;HostKey&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#eff1f5;color:#4f5b66;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;derive&lt;&#x2F;span&gt;&lt;span&gt;(Clone, Debug, PartialEq, Eq, Hash)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;HostKey&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hostname&lt;&#x2F;span&gt;&lt;span&gt;: Cow&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;str&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;port&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u16&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;#[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;derive&lt;&#x2F;span&gt;&lt;span&gt;(Clone, Debug, PartialEq, Eq, Hash)]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Host&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(HostKey&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;me&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Borrow&amp;lt;HostKey&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;Host&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;me&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;where
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;me&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;borrow&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;HostKey&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The lifetime bounds here are important: you&#x27;re only allowed to borrow a &lt;code&gt;Host&lt;&#x2F;code&gt;
+as a &lt;code&gt;HostKey&lt;&#x2F;code&gt; if the lifetime on the &lt;code&gt;HostKey&lt;&#x2F;code&gt; is shorter than the lifetime
+of the &lt;code&gt;Host&lt;&#x2F;code&gt;. I&#x27;m not sure if you&#x27;d ever want any other bounds here, but
+we have to express them explicitly to rustc.&lt;&#x2F;p&gt;
+&lt;p&gt;A kind commenter &lt;a href=&quot;https:&#x2F;&#x2F;www.reddit.com&#x2F;r&#x2F;rust&#x2F;comments&#x2F;1gvx51h&#x2F;comment&#x2F;ly58i0m&#x2F;&quot;&gt;on Reddit&lt;&#x2F;a&gt;
+also pointed out that the weird lifetime error I hit in &lt;code&gt;try_record&lt;&#x2F;code&gt; is probably
+a &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rust-lang&#x2F;rust&#x2F;issues&#x2F;80389&quot;&gt;known issue&lt;&#x2F;a&gt; with &lt;code&gt;get&lt;&#x2F;code&gt; and
+&lt;code&gt;get_mut&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
 </content>
         
     </entry>

@@ -4,6 +4,16 @@ date = 2024-11-24
 description = "Having a Cow, man"
 +++
 
+---
+
+
+**UPDATE:** Less than 30 minutes after posting this, [Andrew Werner](https://bsky.app/profile/did:plc:jlnnta4zi2luwhy44wb4v3hh)
+came along with a really nice answer. It's now included as the bottom of the
+post so you can walk through a few ways to almost solve this problem before
+hitting an actual answer.
+
+---
+
 I ran into a weird complexity cliff with Rust's `HashMap` and lifetimes
 the other day. It's enough of a head scratcher that I thought I'd write it
 up and see if anyone on the broader internet knew what was going on.
@@ -140,6 +150,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct Host<'a> {
+    /// this is now a Cow<'a, str> instead of a String.
     hostname: Cow<'a, str>,
     port: u16,
 }
@@ -151,10 +162,14 @@ struct Stats {
 }
 
 struct HostStats {
+    /// store keys as Host<'static> so we don't have to let lifetime
+    /// annotations go viral.
     stats: HashMap<Host<'static>, Stats>,
 }
 
 impl HostStats {
+    /// get now needs some lifetimes - we have to tell the compiler that 'b
+    /// outlives 'a, otherwise it gets a bit confused about our key types.
     fn get<'a, 'b: 'a>(&'a self, hostname: &'b str, port: u16) -> Option<&'a Stats> {
         let host = Host {
             hostname: Cow::from(hostname),
@@ -164,6 +179,8 @@ impl HostStats {
         self.stats.get(&host)
     }
 
+    /// when we save data, we're dealing with owned hostnames, so inferred
+    /// lifetimes work here.
     fn record(&mut self, hostname: String, port: u16, sent: usize, errors: usize) {
         let host = Host {
             hostname: Cow::from(hostname),
@@ -209,10 +226,52 @@ if you'd like to mess with it yourself.
 
 I ended up working through this problem by working around it; the compound key
 lookup didn't end up being important to my problem. If it had been, I would
-have taken the excellent suggestion to use the [hashbrown](https://docs.rs/hashbrown/0.15.1/hashbrown/index.html)
+have taken [Solly's](https://bsky.app/profile/directxman12.dev) excellent
+suggestion to use the [hashbrown](https://docs.rs/hashbrown/0.15.1/hashbrown/index.html)
 crate directly.
 
 `hashbrown` gives you two ways out of this - `get` is defined in terms of an
 `Equivalent` trait instead of `Borrow` and, if you really need it, the
 [raw entry API](https://docs.rs/hashbrown/0.15.1/hashbrown/struct.HashMap.html#method.raw_entry_mut)
 is right there.
+
+---
+
+Less than 30 minutes after posting this, I got some answers!
+
+
+[Andrew Werner](https://bsky.app/profile/did:plc:jlnnta4zi2luwhy44wb4v3hh)
+came through with an [extremely nice way to define key types](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=8faf0b693bec2f1b1975ec3e74cbac5d).
+The `Borrow` trait requires you to be able to return a reference to the borrowed
+type, so Andrew split the `Host` into an inner `HostKey` and an outer `Host` so
+that the `Host` can be borrowed as a `HostKey`.
+
+```rust
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct HostKey<'a> {
+    hostname: Cow<'a, str>,
+    port: u16,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct Host<'a>(HostKey<'a>);
+
+impl<'a, 'me> Borrow<HostKey<'a>> for Host<'me>
+where
+    'me: 'a,
+{
+    fn borrow(&self) -> &HostKey<'a> {
+        return &self.0;
+    }
+}
+```
+
+The lifetime bounds here are important: you're only allowed to borrow a `Host`
+as a `HostKey` if the lifetime on the `HostKey` is shorter than the lifetime
+of the `Host`. I'm not sure if you'd ever want any other bounds here, but
+we have to express them explicitly to rustc.
+
+A kind commenter [on Reddit](https://www.reddit.com/r/rust/comments/1gvx51h/comment/ly58i0m/)
+also pointed out that the weird lifetime error I hit in `try_record` is probably
+a [known issue](https://github.com/rust-lang/rust/issues/80389) with `get` and
+`get_mut`.
