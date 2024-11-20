@@ -1,0 +1,114 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta content="text/html; charset=UTF-8" http-equiv=content-type><meta content="width=device-width,initial-scale=1" name=viewport><title>Map Keys and Lifetimes</title><link href="https://blinsay.com/ atom.xml" rel=alternate title=RSS type=application/atom+xml><link href=https://blinsay.com/blog/compound-keys/ rel=canonical><meta content=website property=og:type><meta content=https://blinsay.com/blog/compound-keys/ property=og:url><link href=https://blinsay.com/favicon-16x16.png rel=icon size=16x16 type=image/png><link href=https://blinsay.com/favicon-32x32.png rel=icon size=32x32 type=image/png><link href=https://blinsay.com/style.css rel=stylesheet><link href=https://blinsay.com/atom.xml rel=alternate title=atom type=application/atom+xml><body theme=auto><div class=w><header><nav><a href=/>home</a><a href=/blog>posts</a></nav><h1>Map Keys and Lifetimes</h1><p class=post-meta><time datetime=2024-11-24>2024-11-24</time></header><main aria-label=Content class=page-content><p>I ran into a weird complexity cliff with Rust's <code>HashMap</code> and lifetimes the other day. It's enough of a head scratcher that I thought I'd write it up and see if anyone on the broader internet knew what was going on.<p>The rest of this post assumes you're comfortable enough with Rust to see some moderately complicated lifetimes and understand what's going on. You don't need a perfect mental model of the borrow checker.<hr><p><code>HashMap</code> and <code>BTreeMap</code> are pretty darn good and I use them a lot. Suppose you're me and you're <a href=https://junctionlabs.io>making some HTTP requests</a> and you want to track some request stats by host and port. It's pretty easy and boring to do that with a <code>HashMap</code>.<pre class=language-rust data-lang=rust style=background:#eff1f5;color:#4f5b66><code class=language-rust data-lang=rust><span style=color:#b48ead>use </span><span>std::collections::HashMap;
+</span><span>
+</span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>main</span><span>() {
+</span><span>    </span><span style=color:#b48ead>let</span><span> bender = Host { hostname: "</span><span style=color:#a3be8c>bender</span><span>".</span><span style=color:#96b5b4>to_string</span><span>(), port: </span><span style=color:#d08770>666 </span><span>};
+</span><span>
+</span><span>    </span><span style=color:#b48ead>let mut</span><span> host_stats = HashMap::new();
+</span><span>    host_stats.</span><span style=color:#96b5b4>insert</span><span>(
+</span><span>        bender.</span><span style=color:#96b5b4>clone</span><span>(),
+</span><span>        Stats { sent: </span><span style=color:#d08770>30</span><span>, errors: </span><span style=color:#d08770>30 </span><span>},
+</span><span>    );
+</span><span>    assert_eq!(
+</span><span>        host_stats.</span><span style=color:#96b5b4>get</span><span>(&bender),
+</span><span>        Some(&Stats { sent: </span><span style=color:#d08770>30</span><span>, errors: </span><span style=color:#d08770>30</span><span>}),
+</span><span>    );
+</span><span>}
+</span><span>
+</span><span>#[</span><span style=color:#bf616a>derive</span><span>(Clone, Debug, PartialEq, Eq, Hash)]
+</span><span style=color:#b48ead>struct </span><span>Host {
+</span><span>    </span><span style=color:#bf616a>hostname</span><span>: String,
+</span><span>    </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>,
+</span><span>}
+</span><span>
+</span><span>#[</span><span style=color:#bf616a>derive</span><span>(Debug, PartialEq)]
+</span><span style=color:#b48ead>struct </span><span>Stats {
+</span><span>    </span><span style=color:#bf616a>sent</span><span>: </span><span style=color:#b48ead>usize</span><span>,
+</span><span>    </span><span style=color:#bf616a>errors</span><span>: </span><span style=color:#b48ead>usize</span><span>,
+</span><span>}
+</span></code></pre><p>Now suppose you're me and you're trying to wrap stats up with some other state or just want to hide it behind a reasonable interface because we live in a society. I'm not trying to write <code>HashMap<(String, u16), Stats></code> everywhere, and I also don't want people to have to see <code>Host</code> to use this code.<pre class=language-rust data-lang=rust style=background:#eff1f5;color:#4f5b66><code class=language-rust data-lang=rust><span style=color:#b48ead>struct </span><span>HostStats {
+</span><span>    </span><span style=color:#bf616a>stats</span><span>: HashMap&LTHost, Stats>,
+</span><span>}
+</span><span>
+</span><span style=color:#b48ead>impl </span><span>HostStats {
+</span><span>    </span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>get</span><span>(&</span><span style=color:#bf616a>self</span><span>, </span><span style=color:#bf616a>hostname</span><span>: &</span><span style=color:#b48ead>str</span><span>, </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>) -> Option<&Stats> {
+</span><span>        </span><span style=color:#bf616a>self</span><span>.stats.</span><span style=color:#96b5b4>get</span><span>(&Host{
+</span><span>            hostname: hostname.</span><span style=color:#96b5b4>to_string</span><span>(),
+</span><span>            port,
+</span><span>        })
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>record</span><span>(&</span><span style=color:#b48ead>mut </span><span style=color:#bf616a>self</span><span>, </span><span style=color:#bf616a>hostname</span><span>: String, </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>, </span><span style=color:#bf616a>sent</span><span>: </span><span style=color:#b48ead>usize</span><span>, </span><span style=color:#bf616a>errors</span><span>: </span><span style=color:#b48ead>usize</span><span>) {
+</span><span>        </span><span style=color:#b48ead>let</span><span> host = Host {
+</span><span>            hostname,
+</span><span>            port,
+</span><span>        };
+</span><span>        </span><span style=color:#bf616a>self</span><span>.stats.</span><span style=color:#96b5b4>insert</span><span>(host, Stats { sent, errors });
+</span><span>    }
+</span><span>}
+</span></code></pre><p>Now, suppose you're me and you're suddenly annoyed that we can't look up host with just a reference in <code>get</code> - we have to copy the entire string (<code>hostname.to_string()</code>) to build an owned <code>Host</code> and then immediately take a reference to it to look up a key.<p>My first thought here was to define a key-reference type that can be compared to <code>Host</code> but doesn't own a hostname. <code>HashMap</code> had other ideas. Take a look at the <a href=https://doc.rust-lang.org/std/collections/hash_map/struct.HashMap.html#method.get>signature of <code>get</code></a>; it allows you to do a lookup with any key type <code>Q</code> that can be borrowed as if it was a <code>K</code>.<pre class=language-rust data-lang=rust style=background:#eff1f5;color:#4f5b66><code class=language-rust data-lang=rust><span style=color:#b48ead>pub fn </span><span style=color:#8fa1b3>get</span><span>&LTQ>(&</span><span style=color:#bf616a>self</span><span>, </span><span style=color:#bf616a>key</span><span>: &Q) -> Option<&V>
+</span><span style=color:#b48ead>where
+</span><span>    K: Borrow&LTQ> + Ord,
+</span><span>    Q: Hash + Eq + ?Sized;
+</span></code></pre><p>If you try to do what I tried first, you end up being unable to write a useful implementation of <code>Borrow</code>. There's no way to return a <code>&HostRef</code> here without referencing a temporary value AND there is no way to express the appropriate lifetime constraint without conflicting with the signature of the <code>Borrow</code> trait.<pre class=language-rust data-lang=rust style=background:#eff1f5;color:#4f5b66><code class=language-rust data-lang=rust><span style=color:#b48ead>struct </span><span>HostRef<</span><span style=color:#b48ead>'a</span><span>> {
+</span><span>    </span><span style=color:#bf616a>hostname</span><span>: &</span><span style=color:#b48ead>'a str</span><span>,
+</span><span>    </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>,
+</span><span>}
+</span><span>
+</span><span>
+</span><span style=color:#b48ead>impl </span><span>std::borrow::Borrow&LTHostRef> </span><span style=color:#b48ead>for </span><span>Host {
+</span><span>    </span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>borrow</span><span>(&</span><span style=color:#bf616a>self</span><span>) -> &HostRef {
+</span><span>        todo!("</span><span style=color:#a3be8c>good luck</span><span>")
+</span><span>    }
+</span><span>}
+</span></code></pre><p>The fundamental problem with that approach is trying to express that <code>hostname</code> can either be borrowed or owned, and it shouldn't make a difference. If only <a href=https://doc.rust-lang.org/std/borrow/enum.Cow.html>there was a way to express that</a>.<hr><p>Having a <code>Cow</code> <em>almost</em> works, man.<p>When inserting and get a key, things compile. We can use <code>Cow<'static, str></code> to express that we're only going to keep owned keys in the HashMap and keep explicit lifetime annotations from becoming viral.<p>Howerever, there are some lifetime shenanigans necessary in the signature of <code>get</code> - we seem to have have to tell the borrow checker that the borrowed hostname will live at least as long as <code>&self</code> and the output value. Intuitively that restriction doesn't make much sense to me - <a href=https://bsky.app/profile/blen.blinsay.com>get in touch</a> if it makes sense to you.<pre class=language-rust data-lang=rust style=background:#eff1f5;color:#4f5b66><code class=language-rust data-lang=rust><span style=color:#b48ead>use </span><span>std::borrow::Cow;
+</span><span style=color:#b48ead>use </span><span>std::collections::HashMap;
+</span><span>
+</span><span>#[</span><span style=color:#bf616a>derive</span><span>(Clone, Debug, PartialEq, Eq, Hash)]
+</span><span style=color:#b48ead>struct </span><span>Host<</span><span style=color:#b48ead>'a</span><span>> {
+</span><span>    </span><span style=color:#bf616a>hostname</span><span>: Cow<</span><span style=color:#b48ead>'a</span><span>, </span><span style=color:#b48ead>str</span><span>>,
+</span><span>    </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>,
+</span><span>}
+</span><span>
+</span><span>#[</span><span style=color:#bf616a>derive</span><span>(Debug, PartialEq)]
+</span><span style=color:#b48ead>struct </span><span>Stats {
+</span><span>    </span><span style=color:#bf616a>sent</span><span>: </span><span style=color:#b48ead>usize</span><span>,
+</span><span>    </span><span style=color:#bf616a>errors</span><span>: </span><span style=color:#b48ead>usize</span><span>,
+</span><span>}
+</span><span>
+</span><span style=color:#b48ead>struct </span><span>HostStats {
+</span><span>    </span><span style=color:#bf616a>stats</span><span>: HashMap&LTHost<</span><span style=color:#b48ead>'static</span><span>>, Stats>,
+</span><span>}
+</span><span>
+</span><span style=color:#b48ead>impl </span><span>HostStats {
+</span><span>    </span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>get</span><span><</span><span style=color:#b48ead>'a</span><span>, </span><span style=color:#b48ead>'b</span><span>: </span><span style=color:#b48ead>'a</span><span>>(&</span><span style=color:#b48ead>'a </span><span style=color:#bf616a>self</span><span>, </span><span style=color:#bf616a>hostname</span><span>: &</span><span style=color:#b48ead>'b str</span><span>, </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>) -> Option<&</span><span style=color:#b48ead>'a</span><span> Stats> {
+</span><span>        </span><span style=color:#b48ead>let</span><span> host = Host {
+</span><span>            hostname: Cow::from(hostname),
+</span><span>            port,
+</span><span>        };
+</span><span>
+</span><span>        </span><span style=color:#bf616a>self</span><span>.stats.</span><span style=color:#96b5b4>get</span><span>(&host)
+</span><span>    }
+</span><span>
+</span><span>    </span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>record</span><span>(&</span><span style=color:#b48ead>mut </span><span style=color:#bf616a>self</span><span>, </span><span style=color:#bf616a>hostname</span><span>: String, </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>, </span><span style=color:#bf616a>sent</span><span>: </span><span style=color:#b48ead>usize</span><span>, </span><span style=color:#bf616a>errors</span><span>: </span><span style=color:#b48ead>usize</span><span>) {
+</span><span>        </span><span style=color:#b48ead>let</span><span> host = Host {
+</span><span>            hostname: Cow::from(hostname),
+</span><span>            port,
+</span><span>        };
+</span><span>
+</span><span>        </span><span style=color:#bf616a>self</span><span>.stats.</span><span style=color:#96b5b4>insert</span><span>(host, Stats { sent, errors });
+</span><span>    }
+</span><span>}
+</span></code></pre><p>When writing the code that inspired this post, I ended up needing something like <code>try_record</code> - update stats if they were present, but do nothing if that host was absent.<p>That extra level of complexity seems to confuse the borrow checker badly enough that the code doesn't compile any more. I'm not sure exactly why, but trying to define that method makes rustc so mad that it gives you <code>error[E0521]: borrowed data escapes outside of method</code>.<pre class=language-rust data-lang=rust style=background:#eff1f5;color:#4f5b66><code class=language-rust data-lang=rust><span style=color:#b48ead>impl </span><span>HostStats {
+</span><span>    </span><span style=color:#b48ead>fn </span><span style=color:#8fa1b3>try_record</span><span>(&</span><span style=color:#b48ead>mut </span><span style=color:#bf616a>self</span><span>, </span><span style=color:#bf616a>hostname</span><span>: &</span><span style=color:#b48ead>str</span><span>, </span><span style=color:#bf616a>port</span><span>: </span><span style=color:#b48ead>u16</span><span>, </span><span style=color:#bf616a>sent</span><span>: </span><span style=color:#b48ead>usize</span><span>, </span><span style=color:#bf616a>errors</span><span>: </span><span style=color:#b48ead>usize</span><span>) {
+</span><span>        </span><span style=color:#b48ead>let</span><span> host = Host {
+</span><span>            hostname: Cow::from(hostname),
+</span><span>            port,
+</span><span>        };
+</span><span>
+</span><span>        </span><span style=color:#b48ead>if let </span><span>Some(stats) = </span><span style=color:#bf616a>self</span><span>.stats.</span><span style=color:#96b5b4>get_mut</span><span>(&host) {
+</span><span>            stats.sent = sent;
+</span><span>            stats.errors = errors;
+</span><span>        }
+</span><span>    }
+</span><span>}
+</span></code></pre><p>If you understand this one, <strong>please</strong> <a href=https://bsky.app/profile/blen.blinsay.com>get in touch</a>. I'm extremely curious! The code is <a href="https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=61597cab54b5fbb373b44ba2cde6c6ee">on the playground</a> if you'd like to mess with it yourself.</main><footer></footer></div>
