@@ -192,6 +192,15 @@ define that method makes rustc so mad that it gives you &lt;code&gt;error[E0521]
 &lt;p&gt;If you understand this one, &lt;strong&gt;please&lt;&#x2F;strong&gt; &lt;a href=&quot;https:&#x2F;&#x2F;bsky.app&#x2F;profile&#x2F;blen.blinsay.com&quot;&gt;get in touch&lt;&#x2F;a&gt;. I&#x27;m extremely curious! The
 code is &lt;a href=&quot;https:&#x2F;&#x2F;play.rust-lang.org&#x2F;?version=stable&amp;amp;mode=debug&amp;amp;edition=2021&amp;amp;gist=61597cab54b5fbb373b44ba2cde6c6ee&quot;&gt;on the playground&lt;&#x2F;a&gt;
 if you&#x27;d like to mess with it yourself.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;I ended up working through this problem by working around it; the compound key
+lookup didn&#x27;t end up being important to my problem. If it had been, I would
+have taken the excellent suggestion to use the &lt;a href=&quot;https:&#x2F;&#x2F;docs.rs&#x2F;hashbrown&#x2F;0.15.1&#x2F;hashbrown&#x2F;index.html&quot;&gt;hashbrown&lt;&#x2F;a&gt;
+crate directly.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;hashbrown&lt;&#x2F;code&gt; gives you two ways out of this - &lt;code&gt;get&lt;&#x2F;code&gt; is defined in terms of an
+&lt;code&gt;Equivalent&lt;&#x2F;code&gt; trait instead of &lt;code&gt;Borrow&lt;&#x2F;code&gt; and, if you really need it, the
+&lt;a href=&quot;https:&#x2F;&#x2F;docs.rs&#x2F;hashbrown&#x2F;0.15.1&#x2F;hashbrown&#x2F;struct.HashMap.html#method.raw_entry_mut&quot;&gt;raw entry API&lt;&#x2F;a&gt;
+is right there.&lt;&#x2F;p&gt;
 </content>
         
     </entry>

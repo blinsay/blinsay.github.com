@@ -204,3 +204,15 @@ code is [on the playground](https://play.rust-lang.org/?version=stable&mode=debu
 if you'd like to mess with it yourself.
 
 [get in touch]: https://bsky.app/profile/blen.blinsay.com
+
+---
+
+I ended up working through this problem by working around it; the compound key
+lookup didn't end up being important to my problem. If it had been, I would
+have taken the excellent suggestion to use the [hashbrown](https://docs.rs/hashbrown/0.15.1/hashbrown/index.html)
+crate directly.
+
+`hashbrown` gives you two ways out of this - `get` is defined in terms of an
+`Equivalent` trait instead of `Borrow` and, if you really need it, the
+[raw entry API](https://docs.rs/hashbrown/0.15.1/hashbrown/struct.HashMap.html#method.raw_entry_mut)
+is right there.
