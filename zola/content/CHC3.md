@@ -1,12 +1,15 @@
 +++
-title = "CHC3"
+title = "CHC3 - The Cobble Hill Computer Coffee Club"
 +++
 
-Every couple of weeks, the computerati of Middle Brooklyn get together to have
-coffee in Cobble Hill Park and talk about what is best in life (and worst in
-computers). We call it Cobble Hill Computer Coffee Club, or CHC3 for short.
+Every couple of weeks, some NYC software folks get together to have a morning
+beverage in Cobble Hill Park and talk computers. We don't have a set agenda or
+topics or speakers - we just chat. If you're excited about something, we'd love
+to talk about it.
 
-We always meet at one of the round picnic tables in the park, but don't have
-a regular schedule - we pick a day (usually a Friday) based on the weather and
-how long it's been since we've last met. If you want to get an email about the
-next time we meet [sign up here](https://forms.gle/JysGUfh6efiAa8pz7).
+We don't have regular scheduled meetings - we pick a day about four to six weeks
+after our last coffee where the weather looks tolerable. When we do meet, we
+tend to start at 9am.
+
+If you want to get an email the next time we meet [sign up here](https://
+forms.gle/JysGUfh6efiAa8pz7).
