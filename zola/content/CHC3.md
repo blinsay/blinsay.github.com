@@ -11,5 +11,4 @@ We don't have regular scheduled meetings - we pick a day about four to six weeks
 after our last coffee where the weather looks tolerable. When we do meet, we
 tend to start at 9am.
 
-If you want to get an email the next time we meet [sign up here](https://
-forms.gle/JysGUfh6efiAa8pz7).
+If you want to get an email the next time we meet [sign up here](https://forms.gle/JysGUfh6efiAa8pz7).
