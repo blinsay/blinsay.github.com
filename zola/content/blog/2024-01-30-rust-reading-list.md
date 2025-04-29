@@ -1,6 +1,7 @@
 +++
 title = "Rust reading list"
 date = 2024-01-30
+updated = 2025-04-28
 description = "A Rust reading list."
 +++
 
@@ -43,15 +44,19 @@ A long read on error handling from Andrew Gallant, the author of `ripgrep`
 and the `regex` crate. This post walks through idiomatic error handling
 and motivates the `?` operator. Error API design is one of the most subtle,
 difficult parts of Rust to get right. Andrew's blog in general is excellent
-(I like his [bstr] (https://blog.burntsushi.net/bstr/) and [csv](https://
-blog.burntsushi.net/csv/) posts too).
+(I like his [bstr] and [csv] posts too).
+
+[bstr]: https://blog.burntsushi.net/bstr/
+[csv]: https://blog.burntsushi.net/csv/
 
 * [**Designing error types in Rust**](https://mmapped.blog/posts/12-rust-error-handling.html):
 This post builds on Andrew Gallant's post on errors with a focus on what you
 want to represent in an error API. This post is also where you'll really start
 noticing that Rust is secretly an ML-style language. Lean into the functional
-programming, and follow the links to [**Parse, Don't Validate**](<https://
-lexi-lambda.github.io/blog/2019/11/05/ parse-don-t-validate/>).
+programming, and follow the links to [**Parse, Don't Validate**][pdv].
+
+[pdv]: https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate
+
 
 * [**Writing APIs in Rust**](https://sled.rs/apis.html): A value statement by
 the sled.rs author that I happen to strongly agree with. Short, direct, and to
@@ -77,3 +82,10 @@ You will return to it many, many times.
 A higher-level explanation of what async is and what it allows you to do at
 a high level. Since most of the async documentation is how-to, this is a nice
 change of pace.
+
+* [**Async From Scratch**](https://natkr.com/2025-04-10-async-from-scratch-1/):
+A socratic exploration of how the async sausage is made. It's a fairly
+gentle write-your-own-Future tutorial that really takes the time to
+walk you through what the heck is going on and what a Waker is and
+all that nonsense. If you like to understand the guts of things, try
+this one.
