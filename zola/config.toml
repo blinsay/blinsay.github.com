@@ -2,7 +2,7 @@ base_url = "https://blinsay.com"
 title = "Ben Linsay"
 author = "Ben Linsay"
 
-generate_feed = true
+generate_feeds = true
 minify_html = true
 compile_sass = true
 build_search_index = false
