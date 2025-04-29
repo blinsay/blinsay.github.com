@@ -4,7 +4,7 @@
     <link rel="self" type="application/atom+xml" href="https://blinsay.com/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://blinsay.com"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2024-11-24T00:00:00+00:00</updated>
+    <updated>2025-04-28T00:00:00+00:00</updated>
     <id>https://blinsay.com/atom.xml</id>
     <entry xml:lang="en">
         <title>Map Keys and Lifetimes</title>
@@ -289,12 +289,12 @@ until you&#x27;re not sure what you were even asking for in the first place.
 But, once you finally figure out precisely the right framing of the original
 question, the answer turns out to fall right into place.&lt;&#x2F;p&gt;
 &lt;p&gt;Networking and orchestration problems tend to fall into this category, with
-service discovery being an excellent example. The answer is going to be &amp;quot;pick an
-IP address out of a list&amp;quot; or &amp;quot;set up a DNS A record&amp;quot;, but before you can figure
+service discovery being an excellent example. The answer is going to be &quot;pick an
+IP address out of a list&quot; or &quot;set up a DNS A record&quot;, but before you can figure
 out how to look up that address, you have to sit down and decide what addresses
 are even going to be in that list. Do you only include healthy hosts, and if so
 where do you measure health from? How do you define healthy? Should you tailor
-the list to each caller based on where they are? You &amp;quot;just&amp;quot; wanted to populate
+the list to each caller based on where they are? You &quot;just&quot; wanted to populate
 your DNS server, and now you&#x27;re on the hook for defining failure domains for
 your entire organization. Oops.&lt;&#x2F;p&gt;
 </content>
@@ -318,7 +318,7 @@ your entire organization. Oops.&lt;&#x2F;p&gt;
         
         <content type="html" xml:base="https://blinsay.com/blog/cvm/">&lt;p&gt;There&#x27;s been &lt;a href=&quot;https:&#x2F;&#x2F;www-cs-faculty.stanford.edu&#x2F;~knuth&#x2F;papers&#x2F;cvm-note.pdf&quot;&gt;a new Knuth paper&lt;&#x2F;a&gt; about a distinct-values sketch floating around my corner of the internet. Despite having not interacted with a sketch professionally in quite a long time, sketches are still &lt;a href=&quot;https:&#x2F;&#x2F;www.youtube.com&#x2F;watch?v=y3fTaxA8PkU&quot;&gt;near and dear to my heart&lt;&#x2F;a&gt; and this felt like a fun opportunity to implement something new.&lt;&#x2F;p&gt;
 &lt;p&gt;For the unfamiliar, probabilistic sketching is cheating at data structures by using statistics. In return for accepting some amount of error, usually a bounded amount, you get to break what feel like fundamental laws of computer science. &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Bloom_filter&quot;&gt;Bloom filters&lt;&#x2F;a&gt; are probably the most familiar sketch to software engineers, but &lt;a href=&quot;https:&#x2F;&#x2F;dmtcs.episciences.org&#x2F;3545&#x2F;pdf&quot;&gt;HyperLogLog&lt;&#x2F;a&gt; and CountMinSketch have been showing up more regularly over the last decade.&lt;&#x2F;p&gt;
-&lt;p&gt;The sketch in Knuth&#x27;s note is a sketch that, like HyperLogLog, gives an estimator for the distinct element problem, aka the &amp;quot;how big is my set&amp;quot; problem. This new algorithm is interesting in that it doesn&#x27;t solve the problem with tighter bounds or while using less space or offer any improvement over HLLs and other state-of-the-art sketches. Instead, it&#x27;s intended as a teaching tool - it&#x27;s an algorithm that students can implement and can write coherent proofs about without the &lt;a href=&quot;https:&#x2F;&#x2F;mathworld.wolfram.com&#x2F;MellinTransform.html&quot;&gt;graduate level math skills&lt;&#x2F;a&gt; that are required to prove meaningful bounds on other sketches.&lt;&#x2F;p&gt;
+&lt;p&gt;The sketch in Knuth&#x27;s note is a sketch that, like HyperLogLog, gives an estimator for the distinct element problem, aka the &quot;how big is my set&quot; problem. This new algorithm is interesting in that it doesn&#x27;t solve the problem with tighter bounds or while using less space or offer any improvement over HLLs and other state-of-the-art sketches. Instead, it&#x27;s intended as a teaching tool - it&#x27;s an algorithm that students can implement and can write coherent proofs about without the &lt;a href=&quot;https:&#x2F;&#x2F;mathworld.wolfram.com&#x2F;MellinTransform.html&quot;&gt;graduate level math skills&lt;&#x2F;a&gt; that are required to prove meaningful bounds on other sketches.&lt;&#x2F;p&gt;
 &lt;hr &#x2F;&gt;
 &lt;p&gt;At an extremely high level, CVM works by keeping a fixed-size set of elements seen. Each (non-distinct) element in the stream is paired with a randomly sampled per-element value that Knuth dubs a volatility as it arrives, and is sampled if it has a lower volatility than any other element sampled so far. To keep the size of the sampled set bounded, CVM evicts the previous element with the highest volatility. Whether or not a new element is sampled, CVM updates a parameter &lt;code&gt;p&lt;&#x2F;code&gt;, and at any point in time the size of the sampled set divided by &lt;code&gt;p&lt;&#x2F;code&gt; is an unbiased estimator of the number of unique elements in the stream.&lt;&#x2F;p&gt;
 &lt;p&gt;This high-level explanation glosses over important details in the algorithm that handle edge cases and correct for sampling bias. An actual implementation is as readable and concise as any pseudocode for the algorithm would be.&lt;&#x2F;p&gt;
@@ -465,7 +465,7 @@ your entire organization. Oops.&lt;&#x2F;p&gt;
     <entry xml:lang="en">
         <title>Rust reading list</title>
         <published>2024-01-30T00:00:00+00:00</published>
-        <updated>2024-01-30T00:00:00+00:00</updated>
+        <updated>2025-04-28T00:00:00+00:00</updated>
         
         <author>
           <name>
@@ -519,24 +519,24 @@ A long read on error handling from Andrew Gallant, the author of &lt;code&gt;rip
 and the &lt;code&gt;regex&lt;&#x2F;code&gt; crate. This post walks through idiomatic error handling
 and motivates the &lt;code&gt;?&lt;&#x2F;code&gt; operator. Error API design is one of the most subtle,
 difficult parts of Rust to get right. Andrew&#x27;s blog in general is excellent
-(I like his [bstr] (https:&#x2F;&#x2F;blog.burntsushi.net&#x2F;bstr&#x2F;) and [csv](https:&#x2F;&#x2F;
-blog.burntsushi.net&#x2F;csv&#x2F;) posts too).&lt;&#x2F;p&gt;
+(I like his &lt;a href=&quot;https:&#x2F;&#x2F;blog.burntsushi.net&#x2F;bstr&#x2F;&quot;&gt;bstr&lt;&#x2F;a&gt; and &lt;a href=&quot;https:&#x2F;&#x2F;blog.burntsushi.net&#x2F;csv&#x2F;&quot;&gt;csv&lt;&#x2F;a&gt; posts too).&lt;&#x2F;p&gt;
 &lt;&#x2F;li&gt;
-&lt;li&gt;
-&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;mmapped.blog&#x2F;posts&#x2F;12-rust-error-handling.html&quot;&gt;&lt;strong&gt;Designing error types in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;:
+&lt;&#x2F;ul&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;mmapped.blog&#x2F;posts&#x2F;12-rust-error-handling.html&quot;&gt;&lt;strong&gt;Designing error types in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;:
 This post builds on Andrew Gallant&#x27;s post on errors with a focus on what you
 want to represent in an error API. This post is also where you&#x27;ll really start
 noticing that Rust is secretly an ML-style language. Lean into the functional
-programming, and follow the links to [&lt;strong&gt;Parse, Don&#x27;t Validate&lt;&#x2F;strong&gt;](&amp;lt;https:&#x2F;&#x2F;
-lexi-lambda.github.io&#x2F;blog&#x2F;2019&#x2F;11&#x2F;05&#x2F; parse-don-t-validate&#x2F;&amp;gt;).&lt;&#x2F;p&gt;
-&lt;&#x2F;li&gt;
+programming, and follow the links to &lt;a href=&quot;https:&#x2F;&#x2F;lexi-lambda.github.io&#x2F;blog&#x2F;2019&#x2F;11&#x2F;05&#x2F;parse-don-t-validate&quot;&gt;&lt;strong&gt;Parse, Don&#x27;t Validate&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;sled.rs&#x2F;apis.html&quot;&gt;&lt;strong&gt;Writing APIs in Rust&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;: A value statement by
 the sled.rs author that I happen to strongly agree with. Short, direct, and to
 the point.&lt;&#x2F;p&gt;
 &lt;&#x2F;li&gt;
 &lt;li&gt;
-&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;rust-lang.github.io&#x2F;api-guidelines&#x2F;about.html&quot;&gt;&lt;strong&gt;Rust API Guidelines&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;: 
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;rust-lang.github.io&#x2F;api-guidelines&#x2F;about.html&quot;&gt;&lt;strong&gt;Rust API Guidelines&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;:
 Straight from the Rust Library team, guidelines on how to write APIs. I treat
 this as less of a learning tool and more of a resource, but it&#x27;s good to know
 that it&#x27;s here.&lt;&#x2F;p&gt;
@@ -558,6 +558,14 @@ You will return to it many, many times.&lt;&#x2F;p&gt;
 A higher-level explanation of what async is and what it allows you to do at
 a high level. Since most of the async documentation is how-to, this is a nice
 change of pace.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;natkr.com&#x2F;2025-04-10-async-from-scratch-1&#x2F;&quot;&gt;&lt;strong&gt;Async From Scratch&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;:
+A socratic exploration of how the async sausage is made. It&#x27;s a fairly
+gentle write-your-own-Future tutorial that really takes the time to
+walk you through what the heck is going on and what a Waker is and
+all that nonsense. If you like to understand the guts of things, try
+this one.&lt;&#x2F;p&gt;
 &lt;&#x2F;li&gt;
 &lt;&#x2F;ul&gt;
 </content>
@@ -582,7 +590,7 @@ change of pace.&lt;&#x2F;p&gt;
         <content type="html" xml:base="https://blinsay.com/blog/an-bug/">&lt;p&gt;An Bug is &lt;a href=&quot;https:&#x2F;&#x2F;vimeo.com&#x2F;44984049&quot;&gt;a talk by Joe Damato&lt;&#x2F;a&gt; from 2012 that has remained one of my favorite talks about software, ever. It inspired a short-lived podcast series that I hosted on on &lt;a href=&quot;https:&#x2F;&#x2F;www.producthunt.com&#x2F;products&#x2F;bumpers&quot;&gt;bumpers.fm&lt;&#x2F;a&gt; (rip) about debugging software in production.&lt;&#x2F;p&gt;
 &lt;p&gt;Grab a shovel.&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;br &#x2F;&gt;
-&lt;&#x2F;p&gt;
+\&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;intro.m4a&quot;&gt;Introduction&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;jeff-hodges.m4a&quot;&gt;Jeff&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;a href=&quot;&#x2F;audio&#x2F;zac-duncan.m4a&quot;&gt;Zac&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
