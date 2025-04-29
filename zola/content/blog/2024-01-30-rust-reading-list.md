@@ -75,8 +75,9 @@ Async Rust is a lot. It can feel like it's own sub-language and a completely sep
 The async version of The Book. This is still incomplete, but a good place to
 start. You'll get a basic tour of what Rust Futures are and learn what the hell
 is going on with `await` and `Pin`. After reading this book, [read the module
-documentation for `std::pin`](https://doc.rust-lang.org/std/pin/ index.html).
-You will return to it many, many times.
+documentation for `std::pin`][pin]. You will return to it many, many times.
+
+[pin]: https://doc.rust-lang.org/std/pin/index.html
 
 * [**How to think about async/await in Rust**](https://cliffle.com/blog/async-inversion/):
 A higher-level explanation of what async is and what it allows you to do at
