@@ -1,3 +1,6 @@
-# an website
+### an website
 
-change things in the `zola/` directory, publish by running `zola build --output-dir ../docs` and pushing changes.
+source code for blinsay.com. src/ contains a small rust program that
+reads content from static/ and content/ and generates the site in
+out/
+
