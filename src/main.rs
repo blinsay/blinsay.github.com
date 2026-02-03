@@ -4,8 +4,10 @@ use std::{
 };
 
 use anyhow::Context;
+use feed_rs::model::{Entry, Feed};
 use maud::{self, Markup, PreEscaped, html};
 use regex::Regex;
+use url::Url;
 
 fn main() -> anyhow::Result<()> {
     let args: Vec<_> = std::env::args().skip(1).collect();
@@ -32,14 +34,15 @@ fn main() -> anyhow::Result<()> {
             .with_context(|| format!("failed to parse {path}", path = path.display()))?;
         let output_path = out_dir.join(format!("{slug}.html", slug = page.slug));
 
-        eprintln!(
-            "rendering: {} -> {}",
-            page.path.display(),
-            output_path.display()
-        );
-
-        std::fs::write(output_path, render_page(&page).into_string())?;
+        write_page(&page, &output_path)?;
     }
+
+    // blogroll!
+    eprintln!("building blogroll:");
+    let page = blogroll("blogroll.txt", |url| eprintln!("  fetching {url}"))?;
+    std::fs::create_dir_all(out_dir.join("blogroll"))?;
+    let output_path = out_dir.join("blogroll/index.html");
+    write_page(&page, &output_path)?;
 
     // posts
     let posts_dir = out_dir.join("posts");
@@ -51,14 +54,8 @@ fn main() -> anyhow::Result<()> {
         let post_dir = posts_dir.join(&page.slug);
         let output_path = post_dir.join("index.html");
 
-        eprintln!(
-            "rendering: {} -> {}",
-            page.path.display(),
-            output_path.display()
-        );
-
         std::fs::create_dir_all(&post_dir)?;
-        std::fs::write(output_path, render_page(&page).into_string())?;
+        write_page(&page, &output_path)?;
         post_list.push(page);
     }
 
@@ -109,7 +106,7 @@ struct Page {
 }
 
 impl Page {
-    fn read_from(path: PathBuf) -> anyhow::Result<Self> {
+    pub(crate) fn read_from(path: PathBuf) -> anyhow::Result<Self> {
         let filename = path
             .file_name()
             .and_then(|n| n.to_str())
@@ -170,6 +167,72 @@ impl Page {
     }
 }
 
+fn blogroll<F>(path: impl AsRef<Path>, cb: F) -> anyhow::Result<Page>
+where
+    F: Fn(&str),
+{
+    let path = path.as_ref().to_path_buf();
+    let client = ureq::Agent::new_with_defaults();
+    let url_list = std::fs::read_to_string(&path)?;
+
+    let mut entries = vec![];
+    for url in url_list.lines() {
+        let url = url.trim();
+        cb(url);
+        let feed = fetch_feed(&client, url)?;
+        entries.extend(feed.entries.into_iter().take(3));
+    }
+    entries.sort_by(|a, b| b.updated.cmp(&a.updated));
+
+    let content = blogroll_content(&entries);
+    Ok(Page {
+        title: String::new(),
+        date: None,
+        desc: None,
+        slug: String::new(),
+        content,
+        path,
+    })
+}
+
+fn blogroll_content(entries: &[Entry]) -> Markup {
+    let domain = |url: &str| Url::parse(url).ok().map(|u| u.authority().to_string());
+
+    let title = |e: &Entry| {
+        e.title
+            .as_ref()
+            .map(|t| t.content.to_string())
+            .unwrap_or_default()
+    };
+
+    let updated = |e: &Entry| {
+        e.updated
+            .as_ref()
+            .map(|d| format!("({})", d.date_naive()))
+            .unwrap_or_default()
+    };
+
+    let content = html! {
+        ul {
+            @for entry in entries {
+                @let url = entry_url(entry).unwrap_or_default();
+                li {
+                    a href=(url) { b { (title(entry)) } } " " (updated(entry))
+                    br;
+                    (domain(&url).unwrap_or_default())
+                }
+            }
+        }
+    };
+
+    content
+}
+
+fn entry_url(entry: &Entry) -> Option<String> {
+    let link = entry.links.first()?;
+    Some(link.href.clone())
+}
+
 /// get the key as a string, no matter what type the value is
 #[inline]
 fn get_string(table: &toml::Table, key: &'static str) -> anyhow::Result<String> {
@@ -212,6 +275,18 @@ fn parse_markdown(md: &str) -> pulldown_cmark::Parser<'_> {
     })
 }
 
+fn write_page(page: &Page, output_path: &Path) -> anyhow::Result<()> {
+    eprintln!(
+        "rendering: {} -> {}",
+        page.path.display(),
+        output_path.display()
+    );
+
+    std::fs::write(output_path, render_page(page).into_string())?;
+
+    Ok(())
+}
+
 fn render_page(page: &Page) -> Markup {
     let post_meta = page.date.as_ref().map(|date| {
         html! {
@@ -241,6 +316,7 @@ fn render_page(page: &Page) -> Markup {
                         nav class="top-nav" {
                             a href="/" { "home" };
                             a href="/posts" { "posts" };
+                            a href="/blogroll" { "blogroll" };
                         }
                         (title.unwrap_or_default())
                         (post_meta.unwrap_or_default())
@@ -288,4 +364,10 @@ fn meta_styling() -> Markup {
         link rel="icon" size="32x32" type="image/png" href="/static/favicon-32x32.png";
         link rel="icon" size="16x16" type="image/png" href="/static/favicon-16x16.png";
     }
+}
+
+fn fetch_feed(client: &ureq::Agent, url: &str) -> anyhow::Result<Feed> {
+    let bs = client.get(url).call()?.body_mut().read_to_vec()?;
+    let feed = feed_rs::parser::parse(bs.as_slice())?;
+    Ok(feed)
 }
