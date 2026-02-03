@@ -2,8 +2,6 @@
 title = "blen blinsay"
 +++
 
-[Try my product.](https://junctionlabs.io)
-
 [github](https://github.com/blinsay) [linkedin](https://linkedin.com/in/blinsay) [email](mailto:blinsay@gmail.com)
 
 <script src="static/bensway.js"></script>
