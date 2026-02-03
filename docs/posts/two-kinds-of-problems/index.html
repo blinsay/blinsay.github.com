@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/highlight.github-gist.min.css"><link rel="icon" size="32x32" type="image/png" href="/static/favicon-32x32.png"><link rel="icon" size="16x16" type="image/png" href="/static/favicon-16x16.png"><script src="/static/highlight.min.js"></script><script>hljs.highlightAll();</script></head><body><div class="w"><header><nav class="top-nav"><a href="/">home</a><a href="/posts">posts</a></nav><h1>Two Kinds of Problems</h1><p class="post-meta"><time datetime="2024-09-04">2024-09-04</time></p></header><main aria-label="Content" class="page-content"><p>I tend to think about hard problems as being in one of two broad categories:
+easy to ask and difficult to answer, or difficult to ask and easy to answer. Not
+all problems fall onto this spectrum, but I think it's a useful framework for
+orienting yourself when confronting something new.</p>
+<hr />
+<p>The first category is iceberg-shaped: easy to ask questions with deep,
+complicated, and disgusting answers lurking below the surface. Sometimes the
+answer requires knowledge from an adjacent field or simply just brute forcing
+your way through.</p>
+<p>Databases and storage software are a perfect example. You start by asking the
+computer to read back exactly the bytes you wrote (how hard could it be) and
+before you know it you're learning about SSD wear patterns, you have opinions
+about Paxos papers, and you are probably doing something awful to make sure that
+you are <em>actually</em> calling fsync when you think you are calling fsync. Maybe you
+even waded into the whole <code>mmap</code> debate, who knows.</p>
+<hr />
+<p>The second category is an inverted pyramid - all of the work is frontloaded in
+the asking itself. Every follow up question asks even more follow-up questions,
+until you're not sure what you were even asking for in the first place.
+But, once you finally figure out precisely the right framing of the original
+question, the answer turns out to fall right into place.</p>
+<p>Networking and orchestration problems tend to fall into this category, with
+service discovery being an excellent example. The answer is going to be "pick an
+IP address out of a list" or "set up a DNS A record", but before you can figure
+out how to look up that address, you have to sit down and decide what addresses
+are even going to be in that list. Do you only include healthy hosts, and if so
+where do you measure health from? How do you define healthy? Should you tailor
+the list to each caller based on where they are? You "just" wanted to populate
+your DNS server, and now you're on the hook for defining failure domains for
+your entire organization. Oops.</p>
+</main><footer></footer></div></body></html>
