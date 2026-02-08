@@ -320,6 +320,7 @@ fn render_page(page: &Page) -> Markup {
                             a href="/" { "home" };
                             a href="/posts" { "posts" };
                             a href="/blogroll" { "blogroll" };
+                            a href="/chc3.html" { "CHC3" };
                         }
                         (title.unwrap_or_default())
                         (post_meta.unwrap_or_default())
