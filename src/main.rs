@@ -11,6 +11,7 @@ use url::Url;
 
 fn main() -> anyhow::Result<()> {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    let enable_blogroll = std::env::var("BLOGROLL").is_ok();
 
     let out_dir = match args.as_slice() {
         [] => PathBuf::from("out/"),
@@ -38,11 +39,13 @@ fn main() -> anyhow::Result<()> {
     }
 
     // blogroll!
-    eprintln!("building blogroll:");
-    let page = blogroll("blogroll.txt", |url| eprintln!("  fetching {url}"))?;
-    std::fs::create_dir_all(out_dir.join("blogroll"))?;
-    let output_path = out_dir.join("blogroll/index.html");
-    write_page(&page, &output_path)?;
+    if enable_blogroll {
+        eprintln!("building blogroll:");
+        let page = blogroll("blogroll.txt", |url| eprintln!("  fetching {url}"))?;
+        std::fs::create_dir_all(out_dir.join("blogroll"))?;
+        let output_path = out_dir.join("blogroll/index.html");
+        write_page(&page, &output_path)?;
+    }
 
     // posts
     let posts_dir = out_dir.join("posts");
