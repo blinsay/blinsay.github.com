@@ -1,11 +1,12 @@
 https://andrewkelley.me/rss.xml
+https://blog.nelhage.com/atom.xml
 https://brooker.co.za/blog/rss.xml
 https://burntsushi.net/index.xml
-https://www.corsix.org/rss.xml
 https://graydon2.dreamwidth.org/data/atom
 https://matklad.github.io/feed.xml
 https://mmapped.blog/feed.xml
 https://pvk.ca/atom.xml
 https://smallcultfollowing.com/babysteps/atom.xml
 https://without.boats/index.xml
+https://www.corsix.org/rss.xml
 https://www.scattered-thoughts.net/atom.xml
