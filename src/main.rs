@@ -66,7 +66,14 @@ fn main() -> anyhow::Result<()> {
     post_list.sort_by(|a, b| b.date.cmp(&a.date));
     let out_path = posts_dir.join("index.html");
     eprintln!("rendering: {}", out_path.display());
-    std::fs::write(out_path, render_posts(post_list).into_string())?;
+    std::fs::write(out_path, render_posts(&post_list).into_string())?;
+
+    let atom_path = posts_dir.join("atom.xml");
+    eprintln!("rendering: {}", atom_path.display());
+    std::fs::write(
+        atom_path,
+        posts_rss(&post_list, "https://blinsay.com", "posts/atom.xml").into_string(),
+    )?;
 
     Ok(())
 }
@@ -309,7 +316,7 @@ fn render_page(page: &Page) -> Markup {
         (maud::DOCTYPE)
         html lang="en" {
             head {
-                (meta_styling())
+                (meta_styling(&page.title))
                 script src="/static/highlight.min.js" {}
                 script { "hljs.highlightAll();" }
             }
@@ -335,15 +342,15 @@ fn render_page(page: &Page) -> Markup {
     }
 }
 
-fn render_posts(posts: Vec<Page>) -> Markup {
+fn render_posts(posts: &[Page]) -> Markup {
     let url = |slug| format!("/posts/{slug}");
     let content = html! {
         ul {
             @for post in posts {
                 li {
-                    a href=(url(post.slug)) { b { (post.title) } } " (" (post.date.unwrap_or_default()) ") "
+                    a href=(url(&post.slug)) { b { (post.title) } } " (" (post.date.as_deref().unwrap_or_default()) ") "
                     br;
-                    (post.desc.unwrap_or_default())
+                    (post.desc.as_deref().unwrap_or_default())
                 }
             }
         }
@@ -359,7 +366,43 @@ fn render_posts(posts: Vec<Page>) -> Markup {
     })
 }
 
-fn meta_styling() -> Markup {
+fn posts_rss(posts: &[Page], base_url: &str, self_link: &str) -> Markup {
+    let url = |slug| format!("{base_url}/posts/{slug}");
+
+    html! {
+        rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" {
+            channel {
+                title { "blen linsay" }
+                link { (base_url) }
+                description { "posts" }
+                language { "en-us" }
+                atom:link href=(format!("{base_url}/{self_link}")) {}
+
+                @for post in posts {
+                    item {
+                        title { (&post.title)}
+                        link { (url(&post.slug)) }
+                        guid { (url(&post.slug)) }
+                        description { (unescape(&post.content)) }
+                        pubDate { (post.date.as_deref().unwrap_or_default()) }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn unescape(markup: &Markup) -> &str {
+    &markup.0
+}
+
+fn meta_styling(title: &str) -> Markup {
+    let title = if title.is_empty() {
+        "blen blinsay"
+    } else {
+        title
+    };
+
     html! {
         meta charset="utf-8";
         meta name="viewport" content="width=device-width, initial-scale=1";
@@ -367,6 +410,7 @@ fn meta_styling() -> Markup {
         link rel="stylesheet" href="/static/highlight.github-gist.min.css";
         link rel="icon" size="32x32" type="image/png" href="/static/favicon-32x32.png";
         link rel="icon" size="16x16" type="image/png" href="/static/favicon-16x16.png";
+        title { (title) }
     }
 }
 
