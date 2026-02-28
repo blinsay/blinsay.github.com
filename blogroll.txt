@@ -5,6 +5,7 @@ https://burntsushi.net/index.xml
 https://graydon2.dreamwidth.org/data/atom
 https://matklad.github.io/feed.xml
 https://mmapped.blog/feed.xml
+https://ntaylor.ca/feed.xml
 https://pvk.ca/atom.xml
 https://smallcultfollowing.com/babysteps/atom.xml
 https://without.boats/index.xml
