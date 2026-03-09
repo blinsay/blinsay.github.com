@@ -33,9 +33,24 @@ fn main() -> anyhow::Result<()> {
     for path in readdir("content")? {
         let page = Page::read_from(path.clone())
             .with_context(|| format!("failed to parse {path}", path = path.display()))?;
-        let output_path = out_dir.join(format!("{slug}.html", slug = page.slug));
 
+        let output_path = out_dir.join(format!("{slug}.html", slug = page.slug));
         write_page(&page, &output_path)?;
+
+        // also write a redirect because people still have old CHC3 links
+        if page.title.eq_ignore_ascii_case("chc3") {
+            let redirect_dir = out_dir.join(&page.slug);
+            let redirect_path = redirect_dir.join("index.html");
+            let dest_url = format!("https://blinsay.com/{slug}", slug = &page.slug);
+
+            std::fs::create_dir_all(redirect_dir)?;
+            eprintln!(
+                "redirect: {src} -> {dst}",
+                src = redirect_path.display(),
+                dst = dest_url
+            );
+            std::fs::write(redirect_path, redirect(&dest_url).into_string())?;
+        }
     }
 
     // blogroll!
@@ -418,4 +433,22 @@ fn fetch_feed(client: &ureq::Agent, url: &str) -> anyhow::Result<Feed> {
     let bs = client.get(url).call()?.body_mut().read_to_vec()?;
     let feed = feed_rs::parser::parse(bs.as_slice())?;
     Ok(feed)
+}
+
+fn redirect(url: &str) -> Markup {
+    html! {
+        (maud::DOCTYPE)
+        html lang="en" {
+            head {
+                (meta_styling("a redirect"))
+                meta http-equiv="refresh" content={ "0; url=" (url) };
+            }
+            body {
+                p {
+                    "Redirecting you to "
+                    a href=(url) { (url) }
+                }
+            }
+        }
+    }
 }
