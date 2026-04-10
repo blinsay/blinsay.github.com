@@ -56,7 +56,7 @@ fn main() -> anyhow::Result<()> {
     // blogroll!
     if enable_blogroll {
         eprintln!("building blogroll:");
-        let page = blogroll("blogroll.txt", |url| eprintln!("  fetching {url}"))?;
+        let page = blogroll("blogroll.txt")?;
         std::fs::create_dir_all(out_dir.join("blogroll"))?;
         let output_path = out_dir.join("blogroll/index.html");
         write_page(&page, &output_path)?;
@@ -192,10 +192,7 @@ impl Page {
     }
 }
 
-fn blogroll<F>(path: impl AsRef<Path>, cb: F) -> anyhow::Result<Page>
-where
-    F: Fn(&str),
-{
+fn blogroll(path: impl AsRef<Path>) -> anyhow::Result<Page> {
     let path = path.as_ref().to_path_buf();
     let client = ureq::Agent::new_with_defaults();
     let url_list = std::fs::read_to_string(&path)?;
@@ -203,8 +200,14 @@ where
     let mut entries = vec![];
     for url in url_list.lines() {
         let url = url.trim();
-        cb(url);
-        let feed = fetch_feed(&client, url)?;
+        eprintln!("  fetching {url}");
+        let feed = match fetch_feed(&client, url) {
+            Ok(feed) => feed,
+            Err(e) => {
+                eprintln!("    fetch failed: {e}");
+                continue;
+            }
+        };
         entries.extend(feed.entries.into_iter().take(3));
     }
     entries.sort_by(|a, b| b.updated.cmp(&a.updated));
