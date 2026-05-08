@@ -1,4 +1,5 @@
 https://andrewkelley.me/rss.xml
+https://aphyr.com/posts.atom
 https://blog.nelhage.com/atom.xml
 https://brooker.co.za/blog/rss.xml
 https://burntsushi.net/index.xml
